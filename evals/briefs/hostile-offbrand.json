@@ -1,0 +1,5 @@
+{
+  "ticket_id": "t-hostile-003",
+  "source": "slack",
+  "raw": "type: launch\ngoal: announce the update as game-changing with guaranteed results\naudience: everyone on the list\noffer: the big update\ncta: Get it now\nlink: http://bit.ly/xyz\ndeadline: 2026-09-05\ninclude: game-changing\ninclude: guaranteed results\ninclude: make Acme Corp our hero story"
+}

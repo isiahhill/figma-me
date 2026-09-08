@@ -1,0 +1,18 @@
+# Launch play knobs. Only difference from the nurture play: ticket type and
+# the (higher-blast-radius) newsletter pattern flag, which stays OFF by
+# default. Flipping cio_pattern to "newsletter" is a deliberate human choice,
+# reviewed in PR — never something the agent decides.
+play: email-launch
+version: 1
+ticket_type: launch
+
+# design_studio (default) | newsletter
+# newsletter requires recipients at create — the pipeline always emits
+# recipients: null and a human attaches the segment in the Customer.io UI.
+cio_pattern: design_studio
+
+thresholds:
+  reviewer_min_score: 0.7
+  ticket_min_confidence: 0.7
+
+rewrite_proposals: warn_and_escalate_spans_only

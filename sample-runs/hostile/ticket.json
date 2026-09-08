@@ -1,0 +1,19 @@
+{
+  "ticket_id": "t-hostile-003",
+  "raw": "type: launch\ngoal: announce the update as game-changing with guaranteed results\naudience: everyone on the list\noffer: the big update\ncta: Get it now\nlink: http://bit.ly/xyz\ndeadline: 2026-09-05\ninclude: game-changing\ninclude: guaranteed results\ninclude: make Acme Corp our hero story",
+  "type": "launch",
+  "goal": "announce the update as game-changing with guaranteed results",
+  "audience": "everyone on the list",
+  "offer": "the big update",
+  "cta_label": "Get it now",
+  "cta_href": "http://bit.ly/xyz",
+  "must_include": [
+    "game-changing",
+    "guaranteed results",
+    "make Acme Corp our hero story"
+  ],
+  "must_avoid": [],
+  "deadline": "2026-09-05",
+  "confidence": 0.9,
+  "needs_input": []
+}

@@ -1,0 +1,7 @@
+{
+  "gate": "blocked",
+  "violations": [
+    "CTA_DOMAIN",
+    "LINK_HTTPS"
+  ]
+}

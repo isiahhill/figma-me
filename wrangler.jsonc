@@ -1,0 +1,10 @@
+{
+  // Static-assets Worker. The page is one self-contained HTML file with no
+  // fetches, so there is no build step and nothing to go stale between the
+  // repo and what is served.
+  "$schema": "./node_modules/wrangler/config-schema.json",
+  "name": "fme",
+  "compatibility_date": "2026-09-01",
+  "assets": { "directory": "./site" },
+  "routes": [{ "pattern": "fme.isiah.codes", "custom_domain": true }]
+}

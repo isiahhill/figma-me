@@ -1,0 +1,22 @@
+{
+  "ticket_id": "t-messy-002",
+  "raw": "can u send something to designers about the new thing next week?? use the 50% faster claim",
+  "type": "nurture",
+  "goal": "",
+  "audience": "designers",
+  "offer": "",
+  "cta_label": "",
+  "cta_href": "",
+  "must_include": [],
+  "must_avoid": [],
+  "deadline": "",
+  "confidence": 0.2,
+  "needs_input": [
+    "missing goal: ask the requester",
+    "missing offer: ask the requester",
+    "missing cta: ask the requester",
+    "missing cta link: ask the requester",
+    "deadline is relative ('next week'), so ask for a date",
+    "uncleared claim \"50% faster\" is not in the approved claims library. Get it approved or drop it."
+  ]
+}

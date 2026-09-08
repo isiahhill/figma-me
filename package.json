@@ -1,0 +1,31 @@
+{
+  "name": "email-cortex",
+  "version": "0.1.0",
+  "private": true,
+  "description": "Governed email draft-production pipeline: structured intake, deterministic brand enforcement, HITL gating, create-only Customer.io handoff.",
+  "type": "module",
+  "engines": {
+    "node": ">=20"
+  },
+  "scripts": {
+    "test": "node --import tsx --test --test-reporter=spec tests/ && node --import tsx evals/run.ts",
+    "typecheck": "tsc --noEmit",
+    "demo": "node --import tsx src/pipeline.ts demo",
+    "break": "node --import tsx src/pipeline.ts break",
+    "selfcheck": "node --import tsx scripts/selfcheck.ts",
+    "run:brief": "node --import tsx src/pipeline.ts run"
+  },
+  "allowScripts": {
+    "esbuild": true
+  },
+  "dependencies": {
+    "@anthropic-ai/sdk": "^0.123.0",
+    "yaml": "^2.9.0",
+    "zod": "^4.5.4"
+  },
+  "devDependencies": {
+    "@types/node": "^20.19.0",
+    "tsx": "^4.23.13",
+    "typescript": "^5.6.0"
+  }
+}

@@ -1,0 +1,40 @@
+{
+  "status": "fail",
+  "violations": [
+    {
+      "rule_id": "LINK_HTTPS",
+      "severity": "block",
+      "policy_class": "structural",
+      "message": "non-https link: http://bit.ly/xyz",
+      "span": "http://bit.ly/xyz"
+    },
+    {
+      "rule_id": "CTA_DOMAIN",
+      "severity": "block",
+      "policy_class": "synthetic_poc_policy",
+      "message": "cta host bit.ly is not an approved brand host",
+      "span": "http://bit.ly/xyz"
+    },
+    {
+      "rule_id": "FORBIDDEN_PHRASE",
+      "severity": "block",
+      "policy_class": "synthetic_poc_policy",
+      "message": "forbidden phrase: \"game-changing\"",
+      "span": "game-changing"
+    },
+    {
+      "rule_id": "FORBIDDEN_PHRASE",
+      "severity": "block",
+      "policy_class": "synthetic_poc_policy",
+      "message": "forbidden phrase: \"guaranteed results\"",
+      "span": "guaranteed results"
+    },
+    {
+      "rule_id": "NAMED_CUSTOMER",
+      "severity": "block",
+      "policy_class": "synthetic_poc_policy",
+      "message": "customer reference not cleared by legal: \"Make Acme Corp\"",
+      "span": "Make Acme Corp"
+    }
+  ]
+}

@@ -1,0 +1,11 @@
+# Customer.io API allowlist. The pipeline may build payloads for these SDK
+# methods and NOTHING else. Both are content-management create endpoints
+# (March 2026 APIs): they cannot publish, schedule, or send. A human connects
+# the created email in the Customer.io UI — that is the QA surface.
+#
+# createNewsletter requires recipients at create time (higher blast radius),
+# so it sits behind an explicit play.yaml flag and is never the default.
+version: allowlist.v1
+allowed_sdk_methods:
+  - createDesignStudioEmail
+  - createNewsletter

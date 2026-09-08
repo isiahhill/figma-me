@@ -1,0 +1,8 @@
+{
+  "gate": "blocked",
+  "needs_input": [
+    "brief appears to be written in Spanish: ask the requester for the target language before drafting"
+  ],
+  "goal": "",
+  "offer": ""
+}

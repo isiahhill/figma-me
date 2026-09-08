@@ -1,0 +1,12 @@
+{
+  "status": "fail",
+  "violations": [
+    {
+      "rule_id": "CLAIM_NUMBER",
+      "severity": "block",
+      "policy_class": "synthetic_poc_policy",
+      "message": "numeric claim without an approved source: \"47 percent\"",
+      "span": "47 percent"
+    }
+  ]
+}

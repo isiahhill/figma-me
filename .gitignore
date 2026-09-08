@@ -1,0 +1,15 @@
+# Dependencies and local state
+node_modules/
+.env
+.env.*
+
+# Run artifacts are generated output; the folder ships empty with a .gitkeep.
+artifacts/runs/*
+!artifacts/runs/.gitkeep
+
+# Confidentiality guard. Source material for this build stays out of the repo;
+# tests/confidentiality.test.ts fails the suite if any of it is ever tracked.
+*ASSIGNMENT*
+*assignment*
+CLAUDE-CODE-EMAIL-CORTEX-PROMPT*
+*take-home-brief*

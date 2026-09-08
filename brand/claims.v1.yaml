@@ -1,0 +1,20 @@
+# Approved claims library. Copy may state these verbatim, with a citation.
+# Anything that reads like a fact and is not one of these (or a ticket field)
+# is a NO_FABRICATED_FALLBACK / CLAIM_NUMBER violation.
+#
+# Marketers add claims here via PR; the eval suite is the review gate.
+version: claims.v1
+claims:
+  - id: claim.source_of_truth
+    text: "Northwind keeps design and engineering working from one source of truth"
+  - id: claim.design_systems
+    text: "Northwind is built for organization-wide design systems"
+  - id: claim.handoff
+    text: "Handoff gives developers a faster path from design to code"
+
+# Customer references legal has cleared for use in copy. NAMED_CUSTOMER fires
+# on any other detected organization name.
+cleared_references:
+  - Harbor Bank
+  - Meridian Health
+  - Atlas Freight

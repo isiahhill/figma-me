@@ -1,0 +1,3 @@
+{"stage":"intake","ticket_id":"t-messy-002","requester":"slack","type":"nurture","confidence":0.2,"needs_input_count":6}
+{"stage":"draft","ticket_id":"t-messy-002","block_count":3,"citation_count":0,"needs_input_count":6,"lint_status":"fail"}
+{"stage":"gate","ticket_id":"t-messy-002","gate":"blocked","lint_status":"fail","violation_ids":["CTA_COUNT","CTA_DOMAIN"],"reviewer_score":0,"needs_input_count":6}

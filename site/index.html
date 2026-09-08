@@ -1,0 +1,264 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>email-cortex</title>
+<meta name="description" content="A governed email production pipeline. A messy brief goes in, an approved brand-safe draft comes out, and a person still says yes before anything ships.">
+<meta name="robots" content="noindex">
+<link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'><rect width='32' height='32' rx='7' fill='%234d49fc'/></svg>">
+<style>
+/* Type and colour follow the project's style sheet: white ground, black text,
+   one indigo accent used sparingly, Inter for prose and JetBrains Mono for
+   anything the machine wrote. Self-contained on purpose. No fetches, no CDN,
+   no analytics: the page has to render identically on a locked-down laptop. */
+:root{
+  --brand:#4d49fc; --ink:#000; --body:#191919; --muted:#595959;
+  --line:#e2e2e2; --tint:#f5f5f5; --tint2:#ececec; --surface:#fff;
+  --ok:#137a45; --ok-bg:#eafaf1; --stop:#b3261e; --stop-bg:#fdeceb;
+  --mono:"JetBrains Mono",ui-monospace,SFMono-Regular,Menlo,monospace;
+  --sans:"Inter",-apple-system,BlinkMacSystemFont,"Segoe UI",Helvetica,Arial,sans-serif;
+  --r:16px; --max:1120px;
+}
+*{box-sizing:border-box}
+html{-webkit-text-size-adjust:100%}
+body{margin:0;background:var(--surface);color:var(--body);font-family:var(--sans);
+  font-size:17px;line-height:1.6;font-feature-settings:"tnum" 1,"cv05" 1;
+  -webkit-font-smoothing:antialiased}
+.wrap{max-width:var(--max);margin:0 auto;padding:0 24px}
+a{color:var(--brand);text-decoration:none;border-bottom:1px solid rgba(77,73,252,.3)}
+a:hover{border-bottom-color:var(--brand)}
+code,kbd{font-family:var(--mono);font-size:.88em}
+
+header{padding:96px 0 64px;border-bottom:1px solid var(--line)}
+.kicker{font-size:12px;letter-spacing:.14em;text-transform:uppercase;color:var(--brand);
+  font-weight:600;margin:0 0 20px}
+h1{font-size:clamp(34px,6vw,60px);line-height:1.06;letter-spacing:-.02em;font-weight:320;
+  color:var(--ink);margin:0 0 24px;max-width:19ch}
+.lead{font-size:clamp(17px,2.2vw,21px);line-height:1.5;color:var(--body);max-width:62ch;margin:0}
+.meta{margin-top:32px;font-size:14px;color:var(--muted);display:flex;flex-wrap:wrap;gap:8px 20px}
+
+section{padding:72px 0;border-bottom:1px solid var(--line)}
+section:last-of-type{border-bottom:0}
+h2{font-size:clamp(24px,3.4vw,34px);line-height:1.15;letter-spacing:-.015em;font-weight:400;
+  color:var(--ink);margin:0 0 12px;max-width:24ch}
+.sub{color:var(--muted);margin:0 0 36px;max-width:64ch}
+
+.stats{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:12px;margin:0}
+.stat{background:var(--tint);border-radius:var(--r);padding:24px 20px}
+.stat b{display:block;font-family:var(--mono);font-size:30px;font-weight:600;color:var(--ink);
+  letter-spacing:-.02em;line-height:1}
+.stat span{display:block;margin-top:8px;font-size:11px;letter-spacing:.1em;
+  text-transform:uppercase;color:var(--muted)}
+
+/* The pipeline. A single column on a phone, a wrapped row above that, with the
+   tag colour carrying the whole point: indigo is the model, black is code. */
+.flow{display:flex;flex-wrap:wrap;gap:8px;margin:0;padding:0;list-style:none;counter-reset:s}
+.flow li{flex:1 1 190px;background:var(--tint);border-radius:12px;padding:14px 16px;
+  display:flex;gap:12px;align-items:flex-start;min-width:0}
+.flow .tag{font-family:var(--mono);font-size:10px;font-weight:600;letter-spacing:.06em;
+  padding:3px 7px;border-radius:5px;flex:none;margin-top:2px}
+.t-ai{background:var(--brand);color:#fff}
+.t-d{background:#000;color:#fff}
+.t-r{background:var(--tint2);color:var(--body)}
+.t-h{background:#fff;color:var(--ink);box-shadow:inset 0 0 0 1px var(--line)}
+.t-x{background:#fff;color:var(--muted);box-shadow:inset 0 0 0 1px var(--line)}
+.flow p{margin:0;font-size:14px;line-height:1.45}
+.legend{margin-top:20px;font-size:13px;color:var(--muted);display:flex;flex-wrap:wrap;gap:6px 18px}
+.legend b{font-family:var(--mono);font-size:11px;color:var(--body);font-weight:600}
+
+/* Run cards. Each one is a real captured run; the numbers and rule codes are
+   read out of sample-runs/ rather than typed here. */
+/* Four runs, so a 2x2 rather than auto-fit: auto-fit gives three across at this
+   max-width and orphans the fourth card on its own row, which reads as a
+   mistake. The break run is the one that matters, and it should not look like
+   an afterthought. */
+.runs{display:grid;grid-template-columns:1fr;gap:14px}
+@media (min-width:720px){.runs{grid-template-columns:1fr 1fr}}
+.run{border:1px solid var(--line);border-radius:var(--r);padding:22px;background:var(--surface);
+  display:flex;flex-direction:column}
+.run h3{margin:0;font-size:15px;font-family:var(--mono);font-weight:600;color:var(--ink);
+  letter-spacing:-.01em}
+.gate{display:inline-flex;align-items:center;gap:6px;align-self:flex-start;margin:14px 0 16px;
+  font-family:var(--mono);font-size:12px;font-weight:600;padding:5px 10px;border-radius:20px}
+.g-ok{background:var(--ok-bg);color:var(--ok)}
+.g-stop{background:var(--stop-bg);color:var(--stop)}
+.run p{margin:0 0 14px;font-size:14px;line-height:1.5;color:var(--body)}
+.rules{margin:0;padding:0;list-style:none;display:flex;flex-wrap:wrap;gap:6px}
+.rules li{font-family:var(--mono);font-size:11px;background:var(--tint2);color:var(--body);
+  padding:4px 8px;border-radius:5px}
+.run footer{margin-top:auto;padding-top:16px;font-size:12px;color:var(--muted);
+  border-top:1px solid var(--line)}
+
+pre{background:#0e1116;color:#e6edf3;border-radius:var(--r);padding:22px;overflow-x:auto;
+  font-family:var(--mono);font-size:13px;line-height:1.6;margin:0}
+pre b{color:#8ab4ff;font-weight:400}
+.two{display:grid;grid-template-columns:1fr 1fr;gap:16px}
+.card{background:var(--tint);border-radius:var(--r);padding:26px}
+.card h3{margin:0 0 10px;font-size:16px;font-weight:600;color:var(--ink)}
+.card p{margin:0;font-size:15px;line-height:1.55;color:var(--body)}
+
+.cta{display:inline-flex;align-items:center;gap:10px;background:var(--ink);color:#fff;
+  font-size:15px;font-weight:500;padding:13px 22px;border-radius:50px;border:0;
+  transition:transform .25s cubic-bezier(.32,.72,0,1),background .25s}
+.cta:hover{background:var(--brand);transform:translateY(-1px)}
+.cta .a{width:26px;height:26px;border-radius:50%;background:rgba(255,255,255,.16);
+  display:grid;place-items:center;font-size:12px;transition:transform .25s cubic-bezier(.32,.72,0,1)}
+.cta:hover .a{transform:translate(2px,-2px)}
+
+footer.page{padding:44px 0 72px;font-size:13px;color:var(--muted)}
+footer.page p{margin:0 0 6px;max-width:70ch}
+
+@media (max-width:720px){
+  header{padding:64px 0 44px}
+  section{padding:52px 0}
+  .two{grid-template-columns:1fr}
+  body{font-size:16px}
+}
+@media (prefers-reduced-motion:reduce){*{transition:none!important}}
+</style>
+</head>
+<body>
+
+<header>
+  <div class="wrap">
+    <p class="kicker">Proof of concept</p>
+    <h1>A messy brief in. An approved, brand-safe draft out. A person still says yes.</h1>
+    <p class="lead">Generation is the easy part. The process around it is the product: a schema the model has to write inside, brand rules enforced in code, and a gate that fails closed and calls no model.</p>
+    <div class="meta">
+      <span>Offline and deterministic</span>
+      <span>Synthetic inputs only</span>
+      <span>No send path in the code</span>
+    </div>
+  </div>
+</header>
+
+<section>
+  <div class="wrap">
+    <div class="stats">
+      <div class="stat"><b>86</b><span>test assertions</span></div>
+      <div class="stat"><b>12/12</b><span>golden scenarios</span></div>
+      <div class="stat"><b>11</b><span>pipeline steps</span></div>
+      <div class="stat"><b>4</b><span>steps the model touches</span></div>
+    </div>
+  </div>
+</section>
+
+<section>
+  <div class="wrap">
+    <h2>Where deterministic logic ends and judgment begins</h2>
+    <p class="sub">The model reads the brief, drafts inside a schema, rewrites failing spans once, and scores the result. It never decides whether something ships.</p>
+    <ol class="flow">
+      <li><span class="tag t-ai">AI</span><p>Intake normalize, with a confidence score</p></li>
+      <li><span class="tag t-d">D</span><p>Validate ticket; missing fields bounce back as questions</p></li>
+      <li><span class="tag t-d">D</span><p>Plan template and slots</p></li>
+      <li><span class="tag t-r">R</span><p>Retrieve brand pack, claims table, gold examples</p></li>
+      <li><span class="tag t-ai">AI</span><p>Draft inside the schema; every claim cites its source field</p></li>
+      <li><span class="tag t-d">D</span><p>Schema check and brand lint; fails closed</p></li>
+      <li><span class="tag t-ai">AI</span><p>Constrained rewrite of failing spans, one pass max</p></li>
+      <li><span class="tag t-ai">AI</span><p>Advisory score; can pull a draft down to review, never up</p></li>
+      <li><span class="tag t-d">D</span><p>Re-lint and gate: blocked, review, or ready</p></li>
+      <li><span class="tag t-h">H</span><p>Stakeholder preview; approve or request changes</p></li>
+      <li><span class="tag t-x">X</span><p>Create-only handoff, then QA and send in Customer.io</p></li>
+    </ol>
+    <p class="legend"><span><b>D</b> deterministic</span><span><b>R</b> retrieval</span><span><b>AI</b> judgment</span><span><b>H</b> human</span><span><b>X</b> external system</span></p>
+  </div>
+</section>
+
+<section>
+  <div class="wrap">
+    <h2>Four captured runs</h2>
+    <p class="sub">Every gate result and rule code below is read out of the checked-in run artifacts under <code>sample-runs/</code>. Nothing here is typed by hand.</p>
+    <div class="runs">
+
+      <article class="run">
+        <h3>clean</h3>
+        <span class="gate g-ok">ready_for_cio</span>
+        <p>A well-formed nurture brief. Locked footer, one allowlisted CTA, and a create-only payload with no audience attached.</p>
+        <footer>Payload written. Still needs a human before anything sends.</footer>
+      </article>
+
+      <article class="run">
+        <h3>messy</h3>
+        <span class="gate g-stop">blocked</span>
+        <p>A Slack-style brief with holes. Six questions come back instead of six guesses, and the uncleared claim never reaches the copy.</p>
+        <ul class="rules"><li>CTA_COUNT</li><li>CTA_DOMAIN</li></ul>
+        <footer>No payload. Block outranks the review conditions.</footer>
+      </article>
+
+      <article class="run">
+        <h3>hostile</h3>
+        <span class="gate g-stop">blocked</span>
+        <p>Off-brand copy, a named customer, and an insecure link. Each violation reports its policy class rather than a generic failure.</p>
+        <ul class="rules"><li>LINK_HTTPS</li><li>CTA_DOMAIN</li><li>FORBIDDEN_PHRASE</li><li>NAMED_CUSTOMER</li></ul>
+        <footer>No payload.</footer>
+      </article>
+
+      <article class="run">
+        <h3>break</h3>
+        <span class="gate g-stop">blocked</span>
+        <p>A fabricated statistic injected into an otherwise clean brief. The number is not in the approved claims table, so it stops here.</p>
+        <ul class="rules"><li>CLAIM_NUMBER</li></ul>
+        <footer>No payload. This is the one worth watching.</footer>
+      </article>
+
+    </div>
+  </div>
+</section>
+
+<section>
+  <div class="wrap">
+    <h2>The deliberate failure</h2>
+    <p class="sub">One command injects <code>47 percent ROI</code> into a brief that would otherwise pass.</p>
+    <pre>$ npm run break
+
+break    gate=<b>blocked</b>  violations=[<b>CLAIM_NUMBER</b>]  NO payload
+injected number blocked; no payload emitted
+
+  rule_id       CLAIM_NUMBER
+  severity      block
+  message       numeric claim without an approved source: "47 percent"
+  span          47 percent</pre>
+  </div>
+</section>
+
+<section>
+  <div class="wrap">
+    <h2>Three things that are on purpose</h2>
+    <div class="two" style="margin-bottom:16px">
+      <div class="card">
+        <h3>The gate calls no model</h3>
+        <p>Hard brand rules are code, so a persuasive draft cannot argue its way past them. The model can pull a draft down to review, never up.</p>
+      </div>
+      <div class="card">
+        <h3>Every fact cites a source</h3>
+        <p>A number that is not in the approved claims file becomes a question for a human, never an invention.</p>
+      </div>
+    </div>
+    <div class="card">
+      <h3>There is no send</h3>
+      <p>The handoff builds a create-only payload with no audience attached. Sending, scheduling, and triggering are not implemented rather than merely disabled, and two independent guards fail the test suite if a payload ever grows one.</p>
+    </div>
+  </div>
+</section>
+
+<section>
+  <div class="wrap">
+    <h2>Run it yourself</h2>
+    <p class="sub">Four commands. It needs no keys, no network, and no accounts.</p>
+    <pre>npm ci
+npm test        <b># 86 assertions, 12 of 12 golden scenarios</b>
+npm run demo    <b># clean, messy, and hostile, end to end</b>
+npm run break   <b># the injected statistic, blocked</b></pre>
+  </div>
+</section>
+
+<footer class="page">
+  <div class="wrap">
+    <p>The brand, the claims table, the briefs, and the payloads on this page are invented for this build. No real company content, customer data, or internal material went into it.</p>
+    <p>Runs carry no timestamps, so a rerun is byte-identical and a diff in a golden file means a real behavior change.</p>
+  </div>
+</footer>
+
+</body>
+</html>

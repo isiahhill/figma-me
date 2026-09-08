@@ -1,0 +1,10 @@
+{
+  "gate": "blocked",
+  "lint_status": "fail",
+  "reviewer": {
+    "score": 0,
+    "notes": "Flagged: LINK_HTTPS, CTA_DOMAIN, FORBIDDEN_PHRASE, FORBIDDEN_PHRASE, NAMED_CUSTOMER."
+  },
+  "human_decision": "pending",
+  "note": ""
+}

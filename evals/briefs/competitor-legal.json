@@ -1,0 +1,5 @@
+{
+  "ticket_id": "t-legal-012",
+  "source": "slack",
+  "raw": "type: launch\ngoal: Position Northwind against the competition for procurement teams\naudience: procurement and security leads evaluating design tools\noffer: a side-by-side comparison guide\ncta: Read the comparison\nlink: https://www.northwindstudio.example/compare\ndeadline: 2026-09-30\ninclude: unlike Sketchwave Inc, Northwind is HIPAA compliant\ninclude: teams switching from Pixelforge Labs are indemnified against any lawsuit"
+}

@@ -1,0 +1,3 @@
+{"stage":"intake","ticket_id":"t-hostile-003","requester":"slack","type":"launch","confidence":0.9,"needs_input_count":0}
+{"stage":"draft","ticket_id":"t-hostile-003","block_count":4,"citation_count":0,"needs_input_count":0,"lint_status":"fail"}
+{"stage":"gate","ticket_id":"t-hostile-003","gate":"blocked","lint_status":"fail","violation_ids":["LINK_HTTPS","CTA_DOMAIN","FORBIDDEN_PHRASE","FORBIDDEN_PHRASE","NAMED_CUSTOMER"],"reviewer_score":0,"needs_input_count":0}

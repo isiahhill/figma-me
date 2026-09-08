@@ -1,0 +1,77 @@
+{
+  "ticket_id": "t-hostile-003",
+  "type": "launch",
+  "subject": "Announce the update as game-changing with guaranteed results",
+  "preheader": "The big update.",
+  "from_name": "Northwind Studio",
+  "from_email": "hello@northwindstudio.example",
+  "blocks": [
+    {
+      "kind": "hero",
+      "text": "Announce the update as game-changing with guaranteed results",
+      "html": "<h1 style=\"font-size:24px;line-height:32px;margin:0;\">Announce the update as game-changing with guaranteed results</h1>"
+    },
+    {
+      "kind": "body",
+      "text": "{% if customer.first_name %}Hi {{ customer.first_name }},{% else %}Hi there,{% endif %} We put together the big update. Game-changing. Guaranteed results. Make Acme Corp our hero story.",
+      "html": "<p style=\"font-size:15px;line-height:24px;\">{% if customer.first_name %}Hi {{ customer.first_name }},{% else %}Hi there,{% endif %} We put together the big update. Game-changing. Guaranteed results. Make Acme Corp our hero story.</p>"
+    },
+    {
+      "kind": "cta",
+      "text": "Get it now",
+      "html": "<a href=\"http://bit.ly/xyz\" style=\"display:inline-block;background:#1F6FEB;color:#ffffff;padding:12px 20px;border-radius:6px;text-decoration:none;\">Get it now</a>"
+    },
+    {
+      "kind": "footer",
+      "text": "Northwind Studio, 100 Harbor Way, Suite 400, Oakland, CA 94607 You are receiving this because you have a Northwind Studio account. Unsubscribe",
+      "html": "<!-- Locked footer chrome. Attached by application code (attachFooter), never\n     emitted by the model. Contains the unsubscribe link and postal address\n     that CAN_UNSUB / CAN_ADDRESS check for. -->\n<table role=\"presentation\" width=\"100%\" cellpadding=\"0\" cellspacing=\"0\" style=\"border-top:1px solid #e5e5e5;margin-top:32px;\">\n  <tr>\n    <td style=\"padding:24px 0;font-family:Helvetica,Arial,sans-serif;font-size:12px;line-height:18px;color:#6b7280;\">\n      Northwind Studio, 100 Harbor Way, Suite 400, Oakland, CA 94607<br>\n      You are receiving this because you have a Northwind Studio account.<br>\n      <a href=\"https://www.northwindstudio.example/unsubscribe\" style=\"color:#6b7280;text-decoration:underline;\">Unsubscribe</a>\n    </td>\n  </tr>\n</table>\n"
+    }
+  ],
+  "cta": {
+    "label": "Get it now",
+    "href": "http://bit.ly/xyz",
+    "role": "primary"
+  },
+  "needs_input": [],
+  "citations": [],
+  "lint": {
+    "status": "fail",
+    "violations": [
+      {
+        "rule_id": "LINK_HTTPS",
+        "severity": "block",
+        "policy_class": "structural",
+        "message": "non-https link: http://bit.ly/xyz",
+        "span": "http://bit.ly/xyz"
+      },
+      {
+        "rule_id": "CTA_DOMAIN",
+        "severity": "block",
+        "policy_class": "synthetic_poc_policy",
+        "message": "cta host bit.ly is not an approved brand host",
+        "span": "http://bit.ly/xyz"
+      },
+      {
+        "rule_id": "FORBIDDEN_PHRASE",
+        "severity": "block",
+        "policy_class": "synthetic_poc_policy",
+        "message": "forbidden phrase: \"game-changing\"",
+        "span": "game-changing"
+      },
+      {
+        "rule_id": "FORBIDDEN_PHRASE",
+        "severity": "block",
+        "policy_class": "synthetic_poc_policy",
+        "message": "forbidden phrase: \"guaranteed results\"",
+        "span": "guaranteed results"
+      },
+      {
+        "rule_id": "NAMED_CUSTOMER",
+        "severity": "block",
+        "policy_class": "synthetic_poc_policy",
+        "message": "customer reference not cleared by legal: \"Make Acme Corp\"",
+        "span": "Make Acme Corp"
+      }
+    ]
+  }
+}

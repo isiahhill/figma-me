@@ -1,0 +1,869 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Email production, governed</title>
+<meta name="description" content="A messy request goes in, an on-brand draft comes out, and a person still says yes before anything ships.">
+<meta name="robots" content="noindex">
+<link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'><rect width='32' height='32' rx='8' fill='%234d49fc'/><rect x='9' y='12' width='14' height='9' rx='2' fill='%23fff'/></svg>">
+<style>
+/* Light only, by instruction. No prefers-color-scheme block, no theme toggle,
+   and every colour resolves on :root so nothing depends on a media query.
+
+   Fonts resolve to the platform UI face. The page has to render with the wifi
+   off, so there is nothing to fetch and no webfont that can fail to arrive. */
+:root{
+  --brand:#4d49fc; --brand-soft:#eeedff; --brand-ink:#3b37e0;
+  --ink:#0b0b12; --body:#33333d; --muted:#6c6c7a; --faint:#9a9aa8;
+  --ground:#f4f4f7; --surface:#fff; --tint:#f7f7fa; --tint2:#eeeef3;
+  --hair:#e6e6ec; --hair2:#eeeef2;
+  --ok:#0d6c3e; --ok-bg:#e7f6ee; --ok-line:#bde5cd;
+  --stop:#a8231c; --stop-bg:#fdeceb; --stop-line:#f4c9c6;
+  --warn:#7d5100; --warn-bg:#fcf3e1; --warn-line:#efdcb4;
+  --mono:ui-monospace,SFMono-Regular,"SF Mono",Menlo,Consolas,monospace;
+  --sans:system-ui,-apple-system,"Segoe UI Variable Text","Segoe UI",sans-serif;
+  --ease:cubic-bezier(.32,.72,0,1);
+  --r-out:22px; --r-in:15px; --pad:7px;
+  --rail:238px; --max:1140px;
+  --shadow:0 1px 1px rgba(16,16,32,.035), 0 22px 46px -28px rgba(16,16,32,.22);
+  --shadow-sm:0 1px 1px rgba(16,16,32,.03), 0 10px 24px -18px rgba(16,16,32,.20);
+}
+*{box-sizing:border-box}
+html{-webkit-text-size-adjust:100%;scroll-behavior:smooth}
+body{margin:0;background:var(--ground);color:var(--body);font-family:var(--sans);
+  font-size:17px;line-height:1.62;font-feature-settings:"tnum" 1,"cv05" 1;
+  -webkit-font-smoothing:antialiased;text-rendering:optimizeLegibility}
+a{color:var(--brand-ink);text-decoration:none}
+:focus-visible{outline:2px solid var(--brand);outline-offset:3px;border-radius:6px}
+
+/* ---- the nested enclosure -------------------------------------------------
+   Nothing sits flat on the ground. A block is an outer tray with a hairline
+   and a small pad, holding an inner surface with its own concentric radius.
+   Two classes, used everywhere, so the whole page shares one depth model. */
+.pane{background:rgba(255,255,255,.66);border:1px solid var(--hair);
+  border-radius:var(--r-out);padding:var(--pad);box-shadow:var(--shadow)}
+.pane>.in{background:var(--surface);border:1px solid var(--hair2);
+  border-radius:var(--r-in);overflow:hidden}
+.pane.flush{padding:var(--pad);box-shadow:var(--shadow-sm)}
+
+/* ---- reveal on entry ------------------------------------------------------
+   Guarded behind .js so the page is fully readable with scripting off, and
+   moves only transform and opacity so it never triggers layout. */
+.js .rv{opacity:0;transform:translate3d(0,20px,0);
+  transition:opacity .72s var(--ease),transform .72s var(--ease)}
+.js .rv.in{opacity:1;transform:none}
+@media (prefers-reduced-motion:reduce){
+  html{scroll-behavior:auto}
+  *{animation:none!important;transition:none!important}
+  .js .rv{opacity:1;transform:none}
+}
+
+/* ---- section rail ---------------------------------------------------------
+   A reader landing mid page needs to know where they are and how much is
+   left. On a phone it becomes a scrolling strip pinned to the top. */
+.rail{position:fixed;inset:0 auto 0 0;width:var(--rail);background:#0a0a0f;color:#fff;
+  padding:30px 0 22px;display:flex;flex-direction:column;z-index:10;
+  box-shadow:inset -1px 0 0 rgba(255,255,255,.07)}
+.rail .brand{padding:0 22px 24px;display:flex;align-items:center;gap:11px}
+/* The mark stands on its own rather than sitting on a tinted plate. It is
+   already a five-colour shape and a coloured ground behind it just muddies
+   the green and the blue. The SVG is 54x80, so height drives the size and the
+   width follows. */
+.rail .brand .mk{height:26px;flex:none;display:grid;place-items:center}
+.rail .brand .mk svg{height:26px;width:auto;display:block;
+  filter:drop-shadow(0 3px 10px rgba(0,0,0,.45))}
+.rail .brand b{color:#fff;font-weight:600;font-size:13.5px;letter-spacing:-.012em;display:block}
+.rail .brand span i{color:#7d7d8c;font-size:11px;display:block;margin-top:1px;
+  font-style:normal;letter-spacing:.01em}
+.rail ol{list-style:none;margin:0;padding:0 10px;counter-reset:r;overflow-y:auto}
+.rail li{counter-increment:r}
+.rail ol a{display:flex;gap:10px;padding:8px 12px;color:#80808f;font-size:13px;
+  line-height:1.35;border-radius:9px;position:relative;
+  transition:color .28s var(--ease),background-color .28s var(--ease)}
+.rail ol a::before{content:counter(r,decimal-leading-zero);font-family:var(--mono);
+  font-size:10px;color:#46464f;padding-top:3px;transition:color .28s var(--ease)}
+.rail ol a:hover{color:#fff;background:rgba(255,255,255,.05)}
+.rail ol a.on{color:#fff;background:rgba(255,255,255,.08)}
+.rail ol a.on::before{color:var(--brand)}
+.rail .foot{margin-top:auto;padding:18px 22px 0;color:#55555f;font-size:10.5px;
+  letter-spacing:.1em;text-transform:uppercase}
+main{margin-left:var(--rail)}
+.wrap{max-width:var(--max);margin:0 auto;padding:0 clamp(20px,4vw,60px)}
+
+/* ---- vertical rhythm ------------------------------------------------------
+   One spacing ladder: 96px between sections at desktop, everything inside a
+   section stepping in multiples of a 6px base. */
+section{padding:clamp(56px,7.2vw,104px) 0;scroll-margin-top:12px;position:relative}
+section+section::before{content:"";position:absolute;top:0;left:clamp(20px,4vw,60px);
+  right:clamp(20px,4vw,60px);height:1px;background:var(--hair);max-width:var(--max);
+  margin:0 auto}
+#recommendation{padding-top:clamp(48px,6vw,92px)}
+
+.kicker{display:inline-flex;align-items:center;gap:9px;font-size:10.5px;letter-spacing:.16em;
+  text-transform:uppercase;color:var(--brand-ink);font-weight:600;margin:0 0 22px;
+  background:var(--brand-soft);border:1px solid #dedcff;border-radius:100px;padding:5px 13px 5px 9px}
+.kicker .num{font-family:var(--mono);color:#8f8dd6;letter-spacing:0;font-size:10px}
+h1,h2{color:var(--ink);letter-spacing:-.028em;margin:0 0 22px;font-weight:500}
+h1{font-size:clamp(34px,5vw,56px);line-height:1.04;max-width:16ch;font-weight:450}
+h2{font-size:clamp(26px,3.3vw,40px);line-height:1.1;max-width:20ch}
+h4.sub-h{font-size:15px;font-weight:600;color:var(--ink);text-transform:none;
+  letter-spacing:-.01em;margin:40px 0 0}
+h4{font-size:10.5px;letter-spacing:.13em;text-transform:uppercase;color:var(--faint);
+  font-weight:600;margin:0 0 12px}
+.lead{font-size:clamp(18px,1.75vw,21px);line-height:1.5;color:var(--body);max-width:60ch;
+  margin:0 0 34px;letter-spacing:-.011em}
+.prose{max-width:66ch;margin:34px 0 0}
+.prose p{margin:0 0 18px}
+.prose p:last-child{margin-bottom:0}
+
+.next{margin:44px 0 0;max-width:64ch}
+.next a{display:inline-flex;align-items:center;gap:12px;font-size:15px;font-weight:500;
+  color:var(--ink);background:var(--surface);border:1px solid var(--hair);
+  border-radius:100px;padding:8px 8px 8px 20px;box-shadow:var(--shadow-sm);
+  transition:transform .4s var(--ease),box-shadow .4s var(--ease)}
+.next a .arw{width:30px;height:30px;border-radius:100px;background:var(--tint2);
+  display:grid;place-items:center;color:var(--brand-ink);font-size:13px;
+  transition:transform .4s var(--ease),background-color .4s var(--ease)}
+.next a:hover{transform:translate3d(0,-2px,0);box-shadow:0 1px 1px rgba(16,16,32,.04),0 18px 30px -18px rgba(16,16,32,.30)}
+.next a:hover .arw{background:var(--brand-soft);transform:translate3d(0,2px,0)}
+.next a:active{transform:scale(.985)}
+
+/* ---- stats ----------------------------------------------------------------
+   One tray holding four cells, rather than four floating boxes. */
+.stats{display:grid;grid-template-columns:repeat(auto-fit,minmax(148px,1fr));gap:1px;
+  background:var(--hair2);margin:0}
+.statwrap{margin:38px 0 0}
+.stat{background:var(--surface);padding:22px 20px}
+.stat b{display:block;font-family:var(--mono);font-size:clamp(24px,2.6vw,30px);font-weight:600;
+  color:var(--ink);letter-spacing:-.03em;line-height:1.05}
+.stat span{display:block;margin-top:9px;font-size:12.5px;color:var(--muted);line-height:1.4}
+
+/* ---- cards ---------------------------------------------------------------- */
+.cards{display:grid;grid-template-columns:repeat(auto-fit,minmax(258px,1fr));gap:14px;margin:30px 0 0}
+.card{background:rgba(255,255,255,.66);border:1px solid var(--hair);border-radius:var(--r-out);
+  padding:var(--pad);box-shadow:var(--shadow-sm);
+  transition:transform .5s var(--ease),box-shadow .5s var(--ease)}
+.card:hover{transform:translate3d(0,-3px,0);box-shadow:0 1px 1px rgba(16,16,32,.04),0 26px 44px -28px rgba(16,16,32,.30)}
+.card .in{background:var(--surface);border:1px solid var(--hair2);border-radius:var(--r-in);
+  padding:22px 22px 24px;height:100%}
+.card h3{margin:0 0 9px;font-size:15.5px;font-weight:600;color:var(--ink);line-height:1.32;
+  letter-spacing:-.012em}
+.card p{margin:0;font-size:14.5px;line-height:1.58;color:var(--body)}
+
+/* ---- table ---------------------------------------------------------------- */
+.tw{margin:32px 0 0}
+.tscroll{overflow-x:auto;-webkit-overflow-scrolling:touch;border-radius:var(--r-in)}
+table{border-collapse:collapse;width:100%;min-width:620px;font-size:14.5px}
+th{background:var(--tint);color:var(--ink);font-weight:600;text-align:left;padding:13px 16px;
+  border-bottom:1px solid var(--hair);font-size:13px;letter-spacing:-.006em}
+th.em,td.em{background:#f4f3ff}
+th.em{color:var(--brand-ink)}
+td{padding:14px 16px;border-bottom:1px solid var(--hair2);vertical-align:top;line-height:1.5}
+tbody tr:last-child td{border-bottom:0;font-weight:600;background:var(--tint)}
+tbody tr:last-child td.em{background:#e9e8ff;color:var(--ink)}
+
+/* ---- the six stage chain --------------------------------------------------- */
+.chain{display:flex;flex-wrap:wrap;gap:10px;margin:32px 0 0;padding:0;list-style:none}
+.chain li{flex:1 1 172px;background:var(--surface);border:1px solid var(--hair);
+  border-radius:14px;padding:15px 17px;min-width:0;box-shadow:var(--shadow-sm)}
+.chain .n{font-family:var(--mono);font-size:10.5px;color:var(--brand-ink);font-weight:600;
+  display:block;margin-bottom:7px;letter-spacing:.04em}
+.chain p{margin:0;font-size:14px;line-height:1.48}
+
+/* ---- pipeline -------------------------------------------------------------- */
+.stepwrap{margin:32px 0 0}
+.steps{margin:0;padding:0;list-style:none}
+.steps li{display:flex;gap:16px;align-items:baseline;padding:13px 20px;
+  border-bottom:1px solid var(--hair2)}
+.steps li:last-child{border-bottom:0}
+.steps li:nth-child(odd){background:#fcfcfd}
+.steps .n{font-family:var(--mono);font-size:11px;color:var(--faint);flex:none;width:20px}
+.steps p{margin:0;flex:1;font-size:14.5px;line-height:1.5;min-width:0;color:var(--body)}
+.steps .who{font-size:10.5px;font-weight:600;letter-spacing:.04em;padding:3px 10px;
+  border-radius:100px;flex:none;white-space:nowrap}
+.w-AI .who{background:var(--brand-soft);color:var(--brand-ink)}
+.w-code .who{background:#14141c;color:#fff}
+.w-human .who{background:#fff;color:var(--ink);box-shadow:inset 0 0 0 1px var(--hair)}
+.w-system .who{background:var(--tint2);color:var(--muted)}
+.legend{display:flex;flex-wrap:wrap;gap:8px 22px;align-items:center;margin:18px 0 0;
+  font-size:13px;color:var(--muted)}
+.legend .k{width:11px;height:11px;border-radius:4px;display:inline-block;margin-right:3px}
+.legend .k.w-AI{background:var(--brand)}
+.legend .k.w-code{background:#14141c}
+.legend .k.w-human{background:#fff;box-shadow:inset 0 0 0 1px var(--hair)}
+.legend .k.w-system{background:var(--tint2)}
+
+/* ---- callout --------------------------------------------------------------- */
+.callout{margin:36px 0 0;max-width:78ch}
+.callout .in{padding:24px 26px;border-left:2px solid var(--brand)}
+.callout h3{margin:0 0 9px;font-size:15px;font-weight:600;color:var(--ink);letter-spacing:-.01em}
+.callout p{margin:0;font-size:15px;line-height:1.58}
+
+pre{font-family:var(--mono);font-size:12.5px;line-height:1.7;overflow-x:auto;margin:0}
+.treewrap{margin:32px 0 0}
+.treewrap .in{background:#0c0e13;border-color:#1c2029}
+.tree{color:#dbe3ee;padding:24px}
+
+/* ---- the walkthrough ------------------------------------------------------
+   This is where the page stops describing and starts showing. Every pane is
+   built from a file in sample-runs/, and each one names the file it read. */
+.runs{margin:32px 0 0}
+.tabsrow{margin:0 0 20px}
+.tabs{display:flex;gap:5px;flex-wrap:wrap;padding:5px}
+.tabs button{font:inherit;font-size:13.5px;font-weight:500;padding:9px 16px;
+  border-radius:100px;border:1px solid transparent;background:transparent;color:var(--muted);
+  cursor:pointer;text-align:left;
+  transition:background-color .35s var(--ease),color .35s var(--ease),transform .35s var(--ease)}
+.tabs button:hover{color:var(--ink);background:var(--tint)}
+.tabs button[aria-selected=true]{background:var(--ink);color:#fff;border-color:var(--ink)}
+.tabs button:active{transform:scale(.97)}
+.panel[hidden]{display:none}
+.panel-lead{margin:0 0 20px;font-size:15.5px;color:var(--muted);max-width:66ch}
+
+.player .in{background:var(--surface)}
+.pbar{display:flex;align-items:center;gap:12px;padding:12px 14px;border-bottom:1px solid var(--hair2);
+  background:var(--tint);flex-wrap:wrap}
+.pbtn{font:inherit;font-size:13.5px;font-weight:600;color:#fff;background:var(--ink);
+  border:0;border-radius:100px;padding:8px 8px 8px 18px;cursor:pointer;
+  display:inline-flex;align-items:center;gap:11px;
+  transition:transform .35s var(--ease),opacity .35s var(--ease)}
+.pbtn .gl{width:26px;height:26px;border-radius:100px;background:rgba(255,255,255,.16);
+  display:grid;place-items:center;font-size:11px;line-height:1;
+  transition:transform .35s var(--ease),background-color .35s var(--ease)}
+.pbtn:hover .gl{background:rgba(255,255,255,.26);transform:scale(1.08)}
+.pbtn:active{transform:scale(.97)}
+.pcount{font-family:var(--mono);font-size:12px;color:var(--muted);letter-spacing:.02em}
+.psrc{margin-left:auto;font-family:var(--mono);font-size:11px;color:var(--faint);
+  white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.pbody{display:grid;grid-template-columns:250px 1fr;align-items:stretch}
+.prail{list-style:none;margin:0;padding:10px;border-right:1px solid var(--hair2);
+  background:#fcfcfd;display:flex;flex-direction:column;gap:2px}
+.prail button{font:inherit;width:100%;text-align:left;background:transparent;border:0;
+  cursor:pointer;padding:10px 12px;border-radius:11px;display:grid;
+  grid-template-columns:18px 1fr;gap:10px;align-items:start;color:var(--muted);
+  position:relative;transition:background-color .35s var(--ease),color .35s var(--ease)}
+.prail button:hover{background:var(--tint2);color:var(--ink)}
+.prail .sn{font-family:var(--mono);font-size:10.5px;padding-top:2px;color:var(--faint)}
+.prail .st{font-size:13.5px;line-height:1.35;letter-spacing:-.008em}
+.prail li.on button{background:var(--surface);color:var(--ink);font-weight:600;
+  box-shadow:var(--shadow-sm)}
+.prail li.on .sn{color:var(--brand-ink)}
+.prail li.done button{color:var(--body)}
+.prail .fill{grid-column:1/-1;height:2px;border-radius:2px;background:var(--brand);
+  transform:scaleX(0);transform-origin:left;margin-top:8px;display:none}
+.prail li.on .fill{display:block}
+
+.stage{padding:22px 24px 26px;min-width:0}
+.spane{min-width:0}
+.spane h5{margin:0 0 4px;font-size:17px;font-weight:600;color:var(--ink);letter-spacing:-.016em}
+.from{margin:0 0 18px;font-family:var(--mono);font-size:11px;color:var(--faint)}
+.from b{color:var(--brand-ink);font-weight:500}
+.snote{margin:0 0 16px;font-size:14.5px;line-height:1.55;color:var(--body);max-width:62ch}
+
+/* Player mode is switched on by script. Without it every pane renders stacked,
+   which is also exactly what a reduced-motion reader gets. */
+.player.on .spane{display:none}
+.player.on .spane.cur{display:block;animation:panein .5s var(--ease) both}
+@keyframes panein{from{opacity:0;transform:translate3d(0,12px,0)}to{opacity:1;transform:none}}
+.player.on .prail li.on .fill{animation:fill var(--dur,3200ms) linear forwards}
+.player.on.paused .prail li.on .fill{animation-play-state:paused}
+@keyframes fill{from{transform:scaleX(0)}to{transform:scaleX(1)}}
+.player:not(.on) .spane+.spane{margin-top:30px;padding-top:26px;border-top:1px solid var(--hair2)}
+.player:not(.on) .prail .fill{display:none}
+.player:not(.on) .pbar .pbtn,.player:not(.on) .pcount{display:none}
+
+.brief{background:var(--tint);border:1px solid var(--hair2);border-radius:12px;padding:16px 17px;
+  white-space:pre-wrap;word-break:break-word;max-height:250px;overflow-y:auto;
+  color:var(--body);font-size:12.5px}
+.kv{margin:0;display:grid;grid-template-columns:auto 1fr;gap:7px 16px;font-size:13.5px}
+.kv dt{color:var(--faint);font-family:var(--mono);font-size:11px;padding-top:3px;white-space:nowrap}
+.kv dd{margin:0;color:var(--body);min-width:0;overflow-wrap:anywhere}
+.qs{margin:18px 0 0;padding-left:19px;font-size:14px}
+.qs li{margin-bottom:8px;line-height:1.5}
+.tags{margin:0;padding:0;list-style:none;display:flex;flex-wrap:wrap;gap:7px}
+.tags li{font-size:12.5px;padding:5px 11px;border-radius:8px;cursor:help;border:1px solid transparent}
+.sev-block{background:var(--stop-bg);color:var(--stop);border-color:var(--stop-line)}
+.sev-escalate{background:var(--warn-bg);color:var(--warn);border-color:var(--warn-line)}
+.sev-warn{background:var(--tint2);color:var(--body);border-color:var(--hair)}
+.gate{display:inline-flex;align-items:center;gap:8px;font-size:13.5px;font-weight:600;
+  padding:7px 15px;border-radius:100px;margin:0 0 16px;border:1px solid transparent}
+.gate::before{content:"";width:7px;height:7px;border-radius:100px;background:currentColor}
+.g-ok{background:var(--ok-bg);color:var(--ok);border-color:var(--ok-line)}
+.g-stop{background:var(--stop-bg);color:var(--stop);border-color:var(--stop-line)}
+.g-review{background:var(--warn-bg);color:var(--warn);border-color:var(--warn-line)}
+.verdict{font-size:14.5px;margin:0;line-height:1.55}
+.verdict.ok{color:var(--ok)}
+.verdict.stop{color:var(--stop)}
+.score{font-family:var(--mono);font-size:12px;color:var(--muted);margin:0 0 14px}
+
+.prev{border:1px solid var(--hair);border-radius:13px;overflow:hidden;background:#fff;margin:20px 0 0}
+.prev-bar{font-size:10.5px;letter-spacing:.12em;text-transform:uppercase;color:var(--faint);
+  padding:10px 15px;border-bottom:1px solid var(--hair2);background:var(--tint)}
+.prev-scale{overflow:hidden;height:560px}
+.prev iframe{display:block;width:960px;height:560px;border:0;background:#fff;transform-origin:top left}
+
+/* ---- the walkthrough video -------------------------------------------------
+   Local file, no player library and no third-party embed, so the page keeps its
+   promise of rendering with the wifi off once it is cached. preload="none" is
+   deliberate: the MP4 is several megabytes and most readers scroll past it, so
+   nothing is fetched until someone presses play on the poster. */
+.vid{display:block;width:100%;height:auto;background:#0a0a0f;border-radius:var(--r-in)}
+/* The player fills its tray exactly, and .pane>.in clips at its own rounded
+   edge, so the global focus ring (2px brand, offset 3px) is drawn entirely
+   outside the clip and a keyboard user tabbing to the player sees nothing.
+   Same ring, same colour, same width, turned inward so it lands on the video
+   itself. The dark plate behind it gives the accent plenty of contrast. */
+.vid:focus-visible{outline:2px solid var(--brand);outline-offset:-4px}
+.vidnote{margin:14px 0 0;font-size:13px;line-height:1.6;color:var(--muted);max-width:72ch}
+.vidnote a{color:var(--brand-ink)}
+
+/* The document used to close on a footer block whose own padding supplied the
+   space under the last card. That block is gone, so the final section is now
+   the end of the page and carries the closing room itself. A spacer element
+   would hold the same gap and mean nothing, which is the thing worth avoiding. */
+main>section:last-child{padding-bottom:clamp(104px,11vw,168px)}
+
+@media (max-width:1040px){
+  :root{--rail:0px}
+  .rail{position:sticky;top:0;width:auto;inset:auto;flex-direction:row;align-items:center;
+    gap:4px;padding:10px 0;overflow-x:auto;box-shadow:0 1px 0 rgba(255,255,255,.08)}
+  .rail .brand{padding:0 14px 0 16px;flex:none;border-right:1px solid #23232c;margin-right:6px}
+  .rail .brand span i{display:none}
+  .rail ol{display:flex;gap:2px;overflow:visible;padding:0 8px 0 0}
+  .rail ol a{padding:7px 12px;white-space:nowrap}
+  .rail ol a::before{display:none}
+  .rail .foot{display:none}
+  main{margin-left:0}
+  .pbody{grid-template-columns:1fr}
+  .prail{flex-direction:row;overflow-x:auto;border-right:0;border-bottom:1px solid var(--hair2);
+    padding:8px;gap:4px}
+  .prail li{flex:none}
+  .prail button{width:auto;grid-template-columns:auto auto;white-space:nowrap;padding:8px 12px}
+  .prail .fill{grid-column:1/-1}
+  .stage{padding:20px}
+  body{font-size:16px}
+}
+@media (max-width:560px){
+  .steps li{flex-wrap:wrap;padding:13px 16px}
+  .steps .who{margin-left:36px}
+  .kv{grid-template-columns:1fr;gap:2px 0}
+  .kv dd{margin-bottom:9px}
+  .psrc{display:none}
+}
+</style>
+</head>
+<body>
+<script>document.documentElement.className='js'</script>
+
+<nav class="rail" aria-label="Sections">
+  <div class="brand"><span class="mk" aria-hidden="true"><svg width="54" height="80" viewBox="0 0 54 80" fill="none" xmlns="http://www.w3.org/2000/svg">
+<g clip-path="url(#clip0_912_3)">
+<path d="M13.3333 80.0002C20.6933 80.0002 26.6667 74.0268 26.6667 66.6668V53.3335H13.3333C5.97333 53.3335 0 59.3068 0 66.6668C0 74.0268 5.97333 80.0002 13.3333 80.0002Z" fill="#0ACF83"/>
+<path d="M0 39.9998C0 32.6398 5.97333 26.6665 13.3333 26.6665H26.6667V53.3332H13.3333C5.97333 53.3332 0 47.3598 0 39.9998Z" fill="#A259FF"/>
+<path d="M0 13.3333C0 5.97333 5.97333 0 13.3333 0H26.6667V26.6667H13.3333C5.97333 26.6667 0 20.6933 0 13.3333Z" fill="#F24E1E"/>
+<path d="M26.6667 0H40.0001C47.3601 0 53.3334 5.97333 53.3334 13.3333C53.3334 20.6933 47.3601 26.6667 40.0001 26.6667H26.6667V0Z" fill="#FF7262"/>
+<path d="M53.3334 39.9998C53.3334 47.3598 47.3601 53.3332 40.0001 53.3332C32.6401 53.3332 26.6667 47.3598 26.6667 39.9998C26.6667 32.6398 32.6401 26.6665 40.0001 26.6665C47.3601 26.6665 53.3334 32.6398 53.3334 39.9998Z" fill="#1ABCFE"/>
+</g>
+<defs>
+<clipPath id="clip0_912_3">
+<rect width="53.3333" height="80" fill="white"/>
+</clipPath>
+</defs>
+</svg></span>
+    <span><b>Email production</b><i>proof of concept</i></span></div>
+  <ol><li><a href="#recommendation">The recommendation</a></li><li><a href="#which">Why this one</a></li><li><a href="#today">What it costs today</a></li><li><a href="#flow">How the work flows</a></li><li><a href="#guards">What stops a bad email</a></li><li><a href="#video">Watch the walkthrough</a></li><li><a href="#run">Watch it run</a></li><li><a href="#reuse">Built to be reused</a></li><li><a href="#measure">How we would know</a></li><li><a href="#adoption">Getting people to use it</a></li><li><a href="#scope">What I left out</a></li></ol>
+  <p class="foot">Built to be read alone</p>
+</nav>
+
+<main>
+<section id="recommendation"><div class="wrap rv"><p class="kicker"><span class="num">01</span>The recommendation</p><h1>Build email production first</h1><p class="lead">Email production is the one I would build first. This page is the argument and the running proof.</p><div class="statwrap pane"><div class="in"><div class="stats"><div class="stat"><b>86</b><span>tests passing</span></div><div class="stat"><b>12 of 12</b><span>scenarios passing</span></div><div class="stat"><b>11</b><span>steps in the pipeline</span></div><div class="stat"><b>4</b><span>steps the model touches</span></div></div></div></div><div class="prose"><p>The email team gets 40 to 60 requests a month. Each takes about two hours to build and two weeks to reach the front of the queue. That gap is the opportunity.</p><p>What I built takes a request in whatever shape it arrives, asks for anything missing, writes a draft that cites its sources, checks it against brand rules in code, and hands the result to the email team. Nothing sends by itself.</p><p>Writing the email is the easy part. Any model does that. The work is everything around it, the part that decides whether a draft may exist.</p></div><p class="next"><a href="#which">Why this one and not the other three.<span class="arw" aria-hidden="true">&#8595;</span></a></p></div></section><section id="which"><div class="wrap rv"><p class="kicker"><span class="num">02</span>Why this one</p><h2>Four opportunities, scored against six things</h2><p class="lead">I scored all four against six measures, weighted them, and did the arithmetic. Email came out ahead.</p><div class="tw pane"><div class="in"><div class="tscroll"><table><thead><tr><th>What I weighed</th><th>Weight</th><th class=em>Email</th><th>Account pages</th><th>Localisation</th><th>Personas</th></tr></thead><tbody><tr><td>Hours given back</td><td>20%</td><td class=em>5</td><td>3</td><td>4</td><td>2</td></tr><tr><td>Revenue it drives</td><td>20%</td><td class=em>4</td><td>5</td><td>4</td><td>2</td></tr><tr><td>How often it runs</td><td>15%</td><td class=em>5</td><td>3</td><td>2</td><td>3</td></tr><tr><td>Can we actually build it</td><td>20%</td><td class=em>4</td><td>3</td><td>2</td><td>3</td></tr><tr><td>Is the data there</td><td>15%</td><td class=em>4</td><td>3</td><td>3</td><td>2</td></tr><tr><td>How many people it reaches</td><td>10%</td><td class=em>4</td><td>2</td><td>5</td><td>3</td></tr><tr><td>Weighted score</td><td></td><td class=em>4.35</td><td>3.30</td><td>3.25</td><td>2.45</td></tr></tbody></table></div></div></div><div class="prose"><p>These scores are my reading, not a measurement. Anyone can reweight the arithmetic.</p></div><div class="cards"><div class="card"><div class="in"><h3>Email production</h3><p>The two-week wait is queue time, not work. It runs every week rather than in bursts, so there is a real baseline to measure against today.</p></div></div><div class="card"><div class="in"><h3>Account-based pages</h3><p>The strongest revenue story, and the one I wanted to pick. But the lift figure comes from pilots of unstated size, and 25 accounts to 250 is future capacity, not savings today.</p></div></div><div class="card"><div class="in"><h3>Localisation</h3><p>The widest reach, ten regions. Four asset types across all ten with cultural review is more than a first build should carry, and most of the cost is vendor invoices.</p></div></div><div class="card"><div class="in"><h3>Persona content</h3><p>Real value, but the revenue effect is hard to isolate from everything else.</p></div></div></div><aside class="callout pane"><div class="in"><h3>The tradeoff, and what would change my mind</h3><p>Email trades the cleanest revenue story for the only one with a real baseline and daily use. Weight revenue higher and account pages go first, built on the same pieces.</p></div></aside><p class="next"><a href="#today">What the current process costs.<span class="arw" aria-hidden="true">&#8595;</span></a></p></div></section><section id="today"><div class="wrap rv"><p class="kicker"><span class="num">03</span>What it costs today</p><h2>Two hours of work, two weeks of waiting</h2><p class="lead">A request travels through six stages. One of them is the building.</p><ol class="chain"><li><span class="n">01</span><p>A request arrives in Slack or by email</p></li><li><span class="n">02</span><p>Back and forth to work out what was meant</p></li><li><span class="n">03</span><p>Copy, design, and revisions</p></li><li><span class="n">04</span><p>Two weeks in the queue</p></li><li><span class="n">05</span><p>The email team builds it, about two hours</p></li><li><span class="n">06</span><p>Final check, then send</p></li></ol><div class="prose"><p>That is 80 to 120 hours of building a month, before revisions.</p><p>The hours are not the interesting part. The queue caps how many campaigns and tests ship, so the experiments worth running never run.</p></div><aside class="callout pane"><div class="in"><h3>What I assumed, and why</h3><p>An email team of three to five people. About 50 requests a month. Brand guidelines that split into rules a computer can check and judgment that needs a person. That split is what lets the system stop safely. And stakeholders who preview by link and never learn a new tool.</p></div></aside><p class="next"><a href="#flow">What replaces it.<span class="arw" aria-hidden="true">&#8595;</span></a></p></div></section><section id="flow"><div class="wrap rv"><p class="kicker"><span class="num">04</span>How the work flows</p><h2>Eleven steps, and the model touches four</h2><p class="lead">The model reads the request, writes the draft, rewrites what failed a check, and scores quality. Everything else is ordinary code.</p><div class="stepwrap pane"><div class="in"><ol class="steps"><li class="w-AI"><span class="n">01</span><p>Read the request and work out what was meant</p><span class="who">AI</span></li><li class="w-code"><span class="n">02</span><p>Check the required fields are there, and ask if they are not</p><span class="who">code</span></li><li class="w-code"><span class="n">03</span><p>Choose the template and the slots to fill</p><span class="who">code</span></li><li class="w-code"><span class="n">04</span><p>Pull in the brand voice, the approved claims, and past examples</p><span class="who">code</span></li><li class="w-AI"><span class="n">05</span><p>Write the draft, with every fact pointing at its source</p><span class="who">AI</span></li><li class="w-code"><span class="n">06</span><p>Check the shape and the brand rules, and stop if either fails</p><span class="who">code</span></li><li class="w-AI"><span class="n">07</span><p>Rewrite only the parts that failed, once</p><span class="who">AI</span></li><li class="w-AI"><span class="n">08</span><p>Score the draft, which can send it for a read but never wave it through</p><span class="who">AI</span></li><li class="w-code"><span class="n">09</span><p>Decide whether to stop, ask a person to read it, or go ahead</p><span class="who">code</span></li><li class="w-human"><span class="n">10</span><p>The requester previews it and approves or asks for changes</p><span class="who">human</span></li><li class="w-system"><span class="n">11</span><p>Hand a draft to the sending tool, where a person does the final check</p><span class="who">system</span></li></ol></div></div><p class="legend"><span class="k w-AI"></span>the model decides<span class="k w-code"></span>ordinary code<span class="k w-human"></span>a person<span class="k w-system"></span>another system</p><div class="prose"><p>Step nine is the one to look at. It decides whether a draft moves forward, and it calls no model. It is an if-statement reading a rules file.</p><p>Asking a model to check its own work gets you the same model twice. A convincing draft talks its way past a model reviewer. It cannot talk past an if-statement.</p><p>Step eight is the other half. The quality score can push a draft down to a human read. It can never push one up.</p></div><h4 class="sub-h">The three ways a person gets involved</h4><div class="cards"><div class="card"><div class="in"><h3>It asks a question</h3><p>Something required is missing, or the system is not sure it understood. It comes back with specific questions instead of a guess.</p></div></div><div class="card"><div class="in"><h3>It asks for a read</h3><p>Nothing hard broke, but a soft rule fired or the score was low. A person reads it before the requester does.</p></div></div><div class="card"><div class="in"><h3>It stops</h3><p>A hard brand rule failed. Nothing the model produces overrides that, and no draft leaves.</p></div></div></div><aside class="callout pane"><div class="in"><h3>Put plainly</h3><p>You paste a request. The system asks only for what it needs, writes a draft that cites every fact, and waits for a person.</p></div></aside><p class="next"><a href="#guards">What stops a bad email.<span class="arw" aria-hidden="true">&#8595;</span></a></p></div></section><section id="guards"><div class="wrap rv"><p class="kicker"><span class="num">05</span>What stops a bad email</p><h2>Three things hold this up</h2><p class="lead">None of them rely on the model behaving well.</p><div class="prose"><p>The model cannot make web requests. The handoff is a plain function limited to an approved list of create-only endpoints. Nothing here sends, schedules, or triggers.</p><p>Subject length, the one-button rule, the allowed link destinations, and the banned phrase list are this brand&#x27;s own policy, and every violation says so. The unsubscribe link, postal address, and sender identity are structural.</p></div><div class="cards"><div class="card"><div class="in"><h3>The model writes into a form</h3><p>It fills named fields. Subject, preheader, body blocks, one button, and a list of sources. Output that does not fit the form is a failed run with no draft. Loose prose never becomes an email.</p></div></div><div class="card"><div class="in"><h3>Brand rules live in code</h3><p>The rules sit in a file with severities, beside a table of approved claims. A number missing from the table becomes a question, never an invention.</p></div></div><div class="card"><div class="in"><h3>The gate fails closed</h3><p>It stops on a hard rule, asks for a read on a soft one, and reaches ready only when everything passes. No state means sent.</p></div></div></div><p class="next"><a href="#video">Watch it happen first.<span class="arw" aria-hidden="true">&#8595;</span></a></p></div></section><section id="video"><div class="wrap rv"><p class="kicker"><span class="num">06</span>Watch the walkthrough</p><h2>Two minutes of it running</h2><p class="lead">The whole pipeline, start to finish, in the order the story goes.</p><div class="vidwrap pane"><div class="in"><video class="vid" controls playsinline preload="none" poster="media/walkthrough-poster.jpg" width="1920" height="1080"><source src="media/walkthrough.mp4" type="video/mp4"><p>This browser cannot play the recording. <a href="media/walkthrough.mp4">Download the file</a> instead.</p></video></div></div><p class="next"><a href="#run">Now take the controls yourself.<span class="arw" aria-hidden="true">&#8595;</span></a></p></div></section><section id="run"><div class="wrap rv"><p class="kicker"><span class="num">07</span>Watch it run</p><h2>Four requests, four outcomes</h2><p class="lead">Pick a run and press play. Every panel is read out of the captured artifacts, and each step names the file it came from.</p><div class="runs" id="runs"><div class="tabsrow pane flush"><div class="tabs" role="tablist" aria-label="Captured runs"><button type="button" role="tab" id="tab-clean" aria-controls="run-clean" aria-selected="false">A well-formed request</button><button type="button" role="tab" id="tab-messy" aria-controls="run-messy" aria-selected="false">A request with holes in it</button><button type="button" role="tab" id="tab-hostile" aria-controls="run-hostile" aria-selected="false">A request that breaks brand rules</button><button type="button" role="tab" id="tab-break" aria-controls="run-break" aria-selected="false">A fabricated statistic, injected on purpose</button></div></div><div class="panel" id="run-clean" data-run="clean" role="tabpanel" aria-labelledby="tab-clean" hidden><p class="panel-lead">Everything the system needs is present, so it goes straight through.</p><div class="player pane" data-run="clean"><div class="in">
+  <div class="pbar">
+    <button type="button" class="pbtn" aria-label="Play the walkthrough">
+      <span class="lb">Play</span><span class="gl" aria-hidden="true">&#9654;</span></button>
+    <span class="pcount" aria-live="polite">1 / 6</span>
+    <span class="psrc">sample-runs/clean/</span>
+  </div>
+  <div class="pbody">
+    <ol class="prail"><li class=on><button type="button" aria-current="step" aria-controls="w-clean-1"><span class="sn">01</span><span class="st">The request arrives</span><span class="fill"></span></button></li><li><button type="button" aria-current="false" aria-controls="w-clean-2"><span class="sn">02</span><span class="st">Required fields checked</span><span class="fill"></span></button></li><li><button type="button" aria-current="false" aria-controls="w-clean-3"><span class="sn">03</span><span class="st">The model writes the draft</span><span class="fill"></span></button></li><li><button type="button" aria-current="false" aria-controls="w-clean-4"><span class="sn">04</span><span class="st">Brand rules run in code</span><span class="fill"></span></button></li><li><button type="button" aria-current="false" aria-controls="w-clean-5"><span class="sn">05</span><span class="st">The gate decides</span><span class="fill"></span></button></li><li><button type="button" aria-current="false" aria-controls="w-clean-6"><span class="sn">06</span><span class="st">Handoff, or not</span><span class="fill"></span></button></li></ol>
+    <div class="stage"><article class="spane cur" id="w-clean-1"><h5>The request arrives</h5><p class="from">read from <b>sample-runs/clean/ticket.json</b></p><p class="snote">Ticket t-clean-001, submitted through request_form.</p><pre class="brief">type: nurture
+goal: Help design leads roll out a shared design system
+audience: design system leads at mid-size product teams
+offer: a guided walkthrough of the Northwind design system workspace
+cta: See the walkthrough
+link: https://www.northwindstudio.example/walkthrough
+deadline: 2026-09-16
+include: Northwind is built for organization-wide design systems
+avoid: pricing talk</pre></article><article class="spane" id="w-clean-2"><h5>Required fields checked</h5><p class="from">read from <b>sample-runs/clean/ticket.json</b></p><p class="snote">Read with confidence 0.9. Every required field was present.</p><dl class="kv"><dt>type</dt><dd>nurture</dd><dt>goal</dt><dd>Help design leads roll out a shared design system</dd><dt>audience</dt><dd>design system leads at mid-size product teams</dd><dt>offer</dt><dd>a guided walkthrough of the Northwind design system workspace</dd><dt>button</dt><dd>See the walkthrough</dd><dt>link</dt><dd>https://www.northwindstudio.example/walkthrough</dd><dt>deadline</dt><dd>2026-09-16</dd></dl><p class="snote" style="margin-top:16px">Nothing was missing. No questions.</p></article><article class="spane" id="w-clean-3"><h5>The model writes the draft</h5><p class="from">read from <b>sample-runs/clean/draft.json</b></p><p class="snote">4 blocks, 1 cited claim.</p><dl class="kv"><dt>subject</dt><dd>Help design leads roll out a shared design system</dd><dt>preheader</dt><dd>A guided walkthrough of the Northwind design system workspace.</dd><dt>from</dt><dd>Northwind Studio</dd><dt>blocks</dt><dd>hero, body, cta, footer</dd><dt>button</dt><dd>See the walkthrough</dd></dl><h4 style="margin-top:20px">What it pointed at</h4><ul class="tags"><li class="sev-warn" title="Northwind is built for organization-wide design systems">claim.design_systems</li></ul><div class="prev"><div class="prev-bar">The email it produced</div><div class="prev-scale"><iframe title="The email produced by the clean run" sandbox srcdoc="&lt;!doctype html&gt;
+&lt;html&gt;
+&lt;head&gt;
+&lt;meta charset=&quot;utf-8&quot;&gt;
+&lt;title&gt;Preview · t-clean-001&lt;/title&gt;
+&lt;/head&gt;
+&lt;body style=&quot;margin:0;font-family:Helvetica,Arial,sans-serif;background:#f3f4f6;&quot;&gt;
+  &lt;div style=&quot;padding:16px 24px;background:#111827;color:#fff;&quot;&gt;
+    &lt;strong&gt;Help design leads roll out a shared design system&lt;/strong&gt;
+    &lt;span style=&quot;margin-left:16px;padding:2px 10px;border-radius:99px;background:#166534;font-size:12px;&quot;&gt;Ready to hand off&lt;/span&gt;
+    &lt;div style=&quot;font-size:12px;color:#9ca3af;&quot;&gt;Northwind Studio &amp;lt;hello@northwindstudio.example&amp;gt; · preheader: A guided walkthrough of the Northwind design system workspace.&lt;/div&gt;
+  &lt;/div&gt;
+  &lt;div style=&quot;display:flex;gap:24px;align-items:flex-start;padding:24px;&quot;&gt;
+    &lt;div style=&quot;flex:0 0 auto;background:#fff;border:1px solid #e5e7eb;&quot;&gt;
+&lt;table role=&quot;presentation&quot; width=&quot;100%&quot; cellpadding=&quot;0&quot; cellspacing=&quot;0&quot;&gt;&lt;tr&gt;&lt;td align=&quot;center&quot;&gt;
+  &lt;table role=&quot;presentation&quot; width=&quot;600&quot; cellpadding=&quot;0&quot; cellspacing=&quot;0&quot; style=&quot;width:600px;max-width:100%;font-family:Helvetica,Arial,sans-serif;color:#111;&quot;&gt;
+      &lt;tr&gt;&lt;td style=&quot;padding:8px 24px;&quot;&gt;&lt;h1 style=&quot;font-size:24px;line-height:32px;margin:0;&quot;&gt;Help design leads roll out a shared design system&lt;/h1&gt;&lt;/td&gt;&lt;/tr&gt;
+      &lt;tr&gt;&lt;td style=&quot;padding:8px 24px;&quot;&gt;&lt;p style=&quot;font-size:15px;line-height:24px;&quot;&gt;{% if customer.first_name %}Hi {{ customer.first_name }},{% else %}Hi there,{% endif %} We put together a guided walkthrough of the Northwind design system workspace. Northwind is built for organization-wide design systems.&lt;/p&gt;&lt;/td&gt;&lt;/tr&gt;
+      &lt;tr&gt;&lt;td style=&quot;padding:8px 24px;&quot;&gt;&lt;a href=&quot;https://www.northwindstudio.example/walkthrough&quot; style=&quot;display:inline-block;background:#1F6FEB;color:#ffffff;padding:12px 20px;border-radius:6px;text-decoration:none;&quot;&gt;See the walkthrough&lt;/a&gt;&lt;/td&gt;&lt;/tr&gt;
+      &lt;tr&gt;&lt;td style=&quot;padding:8px 24px;&quot;&gt;&lt;!-- Locked footer chrome. Attached by application code (attachFooter), never
+     emitted by the model. Contains the unsubscribe link and postal address
+     that CAN_UNSUB / CAN_ADDRESS check for. --&gt;
+&lt;table role=&quot;presentation&quot; width=&quot;100%&quot; cellpadding=&quot;0&quot; cellspacing=&quot;0&quot; style=&quot;border-top:1px solid #e5e5e5;margin-top:32px;&quot;&gt;
+  &lt;tr&gt;
+    &lt;td style=&quot;padding:24px 0;font-family:Helvetica,Arial,sans-serif;font-size:12px;line-height:18px;color:#6b7280;&quot;&gt;
+      Northwind Studio, 100 Harbor Way, Suite 400, Oakland, CA 94607&lt;br&gt;
+      You are receiving this because you have a Northwind Studio account.&lt;br&gt;
+      &lt;a href=&quot;https://www.northwindstudio.example/unsubscribe&quot; style=&quot;color:#6b7280;text-decoration:underline;&quot;&gt;Unsubscribe&lt;/a&gt;
+    &lt;/td&gt;
+  &lt;/tr&gt;
+&lt;/table&gt;
+&lt;/td&gt;&lt;/tr&gt;
+  &lt;/table&gt;
+&lt;/td&gt;&lt;/tr&gt;&lt;/table&gt;
+    &lt;/div&gt;
+    &lt;aside style=&quot;flex:1;min-width:260px;&quot;&gt;
+      &lt;h2 style=&quot;font-size:14px;text-transform:uppercase;letter-spacing:0.05em;color:#6b7280;&quot;&gt;Brand check passed&lt;/h2&gt;
+&lt;p style=&quot;color:#166534;&quot;&gt;No violations.&lt;/p&gt;
+    &lt;/aside&gt;
+  &lt;/div&gt;
+&lt;/body&gt;
+&lt;/html&gt;
+"></iframe></div></div></article><article class="spane" id="w-clean-4"><h5>Brand rules run in code</h5><p class="from">read from <b>sample-runs/clean/lint.json</b></p><p class="snote">Status pass. Every rule ran. None fired.</p><p class="verdict ok">The draft passed the shape check and every brand rule, so nothing was raised.</p></article><article class="spane" id="w-clean-5"><h5>The gate decides</h5><p class="from">read from <b>sample-runs/clean/decision.json</b></p><p class="snote">Gate ready_for_cio, on lint status pass.</p><span class="gate g-ok">Ready to hand off</span><p class="score">reviewer score 0.95 &middot; On-ticket, cited, and inside brand policy.</p><p class="snote">The gate reads the rule results and decides. It calls no model, so a persuasive draft has nothing to persuade.</p></article><article class="spane" id="w-clean-6"><h5>Handoff, or not</h5><p class="from">read from <b>sample-runs/clean/cio-payload.json</b></p><p class="snote">Handoff event written by createDesignStudioEmail.</p><dl class="kv"><dt>method</dt><dd>POST</dd><dt>call</dt><dd>createDesignStudioEmail</dd><dt>name</dt><dd>Nurture · t-clean-001 · 2026-09-16</dd><dt>recipient</dt><dd>{{customer.email}}</dd></dl><p class="verdict ok" style="margin-top:16px">A draft was created. The recipient is an unresolved template variable, so no audience is attached and there is no send call.</p></article></div>
+  </div>
+</div></div></div><div class="panel" id="run-messy" data-run="messy" role="tabpanel" aria-labelledby="tab-messy" hidden><p class="panel-lead">The kind that actually arrives in Slack. It asks rather than guesses.</p><div class="player pane" data-run="messy"><div class="in">
+  <div class="pbar">
+    <button type="button" class="pbtn" aria-label="Play the walkthrough">
+      <span class="lb">Play</span><span class="gl" aria-hidden="true">&#9654;</span></button>
+    <span class="pcount" aria-live="polite">1 / 6</span>
+    <span class="psrc">sample-runs/messy/</span>
+  </div>
+  <div class="pbody">
+    <ol class="prail"><li class=on><button type="button" aria-current="step" aria-controls="w-messy-1"><span class="sn">01</span><span class="st">The request arrives</span><span class="fill"></span></button></li><li><button type="button" aria-current="false" aria-controls="w-messy-2"><span class="sn">02</span><span class="st">Required fields checked</span><span class="fill"></span></button></li><li><button type="button" aria-current="false" aria-controls="w-messy-3"><span class="sn">03</span><span class="st">The model writes the draft</span><span class="fill"></span></button></li><li><button type="button" aria-current="false" aria-controls="w-messy-4"><span class="sn">04</span><span class="st">Brand rules run in code</span><span class="fill"></span></button></li><li><button type="button" aria-current="false" aria-controls="w-messy-5"><span class="sn">05</span><span class="st">The gate decides</span><span class="fill"></span></button></li><li><button type="button" aria-current="false" aria-controls="w-messy-6"><span class="sn">06</span><span class="st">Handoff, or not</span><span class="fill"></span></button></li></ol>
+    <div class="stage"><article class="spane cur" id="w-messy-1"><h5>The request arrives</h5><p class="from">read from <b>sample-runs/messy/ticket.json</b></p><p class="snote">Ticket t-messy-002, submitted through slack.</p><pre class="brief">can u send something to designers about the new thing next week?? use the 50% faster claim</pre></article><article class="spane" id="w-messy-2"><h5>Required fields checked</h5><p class="from">read from <b>sample-runs/messy/ticket.json</b></p><p class="snote">Read with confidence 0.2. 6 questions raised.</p><dl class="kv"><dt>type</dt><dd>nurture</dd><dt>audience</dt><dd>designers</dd></dl><h4 style="margin-top:20px">What it asked for</h4><ul class="qs"><li>missing goal: ask the requester</li><li>missing offer: ask the requester</li><li>missing cta: ask the requester</li><li>missing cta link: ask the requester</li><li>deadline is relative (&#x27;next week&#x27;), so ask for a date</li><li>uncleared claim &quot;50% faster&quot; is not in the approved claims library. Get it approved or drop it.</li></ul></article><article class="spane" id="w-messy-3"><h5>The model writes the draft</h5><p class="from">read from <b>sample-runs/messy/draft.json</b></p><p class="snote">3 blocks, 0 cited claims.</p><dl class="kv"><dt>subject</dt><dd>An update from Northwind Studio</dd><dt>preheader</dt><dd>Details inside.</dd><dt>from</dt><dd>Northwind Studio</dd><dt>blocks</dt><dd>hero, body, footer</dd></dl><div class="prev"><div class="prev-bar">The email it produced</div><div class="prev-scale"><iframe title="The email produced by the messy run" sandbox srcdoc="&lt;!doctype html&gt;
+&lt;html&gt;
+&lt;head&gt;
+&lt;meta charset=&quot;utf-8&quot;&gt;
+&lt;title&gt;Preview · t-messy-002&lt;/title&gt;
+&lt;/head&gt;
+&lt;body style=&quot;margin:0;font-family:Helvetica,Arial,sans-serif;background:#f3f4f6;&quot;&gt;
+  &lt;div style=&quot;padding:16px 24px;background:#111827;color:#fff;&quot;&gt;
+    &lt;strong&gt;An update from Northwind Studio&lt;/strong&gt;
+    &lt;span style=&quot;margin-left:16px;padding:2px 10px;border-radius:99px;background:#991b1b;font-size:12px;&quot;&gt;Stopped&lt;/span&gt;
+    &lt;div style=&quot;font-size:12px;color:#9ca3af;&quot;&gt;Northwind Studio &amp;lt;hello@northwindstudio.example&amp;gt; · preheader: Details inside.&lt;/div&gt;
+  &lt;/div&gt;
+  &lt;div style=&quot;display:flex;gap:24px;align-items:flex-start;padding:24px;&quot;&gt;
+    &lt;div style=&quot;flex:0 0 auto;background:#fff;border:1px solid #e5e7eb;&quot;&gt;
+&lt;table role=&quot;presentation&quot; width=&quot;100%&quot; cellpadding=&quot;0&quot; cellspacing=&quot;0&quot;&gt;&lt;tr&gt;&lt;td align=&quot;center&quot;&gt;
+  &lt;table role=&quot;presentation&quot; width=&quot;600&quot; cellpadding=&quot;0&quot; cellspacing=&quot;0&quot; style=&quot;width:600px;max-width:100%;font-family:Helvetica,Arial,sans-serif;color:#111;&quot;&gt;
+      &lt;tr&gt;&lt;td style=&quot;padding:8px 24px;&quot;&gt;&lt;h1 style=&quot;font-size:24px;line-height:32px;margin:0;&quot;&gt;An update from Northwind Studio&lt;/h1&gt;&lt;/td&gt;&lt;/tr&gt;
+      &lt;tr&gt;&lt;td style=&quot;padding:8px 24px;&quot;&gt;&lt;p style=&quot;font-size:15px;line-height:24px;&quot;&gt;{% if customer.first_name %}Hi {{ customer.first_name }},{% else %}Hi there,{% endif %}&lt;/p&gt;&lt;/td&gt;&lt;/tr&gt;
+      &lt;tr&gt;&lt;td style=&quot;padding:8px 24px;&quot;&gt;&lt;!-- Locked footer chrome. Attached by application code (attachFooter), never
+     emitted by the model. Contains the unsubscribe link and postal address
+     that CAN_UNSUB / CAN_ADDRESS check for. --&gt;
+&lt;table role=&quot;presentation&quot; width=&quot;100%&quot; cellpadding=&quot;0&quot; cellspacing=&quot;0&quot; style=&quot;border-top:1px solid #e5e5e5;margin-top:32px;&quot;&gt;
+  &lt;tr&gt;
+    &lt;td style=&quot;padding:24px 0;font-family:Helvetica,Arial,sans-serif;font-size:12px;line-height:18px;color:#6b7280;&quot;&gt;
+      Northwind Studio, 100 Harbor Way, Suite 400, Oakland, CA 94607&lt;br&gt;
+      You are receiving this because you have a Northwind Studio account.&lt;br&gt;
+      &lt;a href=&quot;https://www.northwindstudio.example/unsubscribe&quot; style=&quot;color:#6b7280;text-decoration:underline;&quot;&gt;Unsubscribe&lt;/a&gt;
+    &lt;/td&gt;
+  &lt;/tr&gt;
+&lt;/table&gt;
+&lt;/td&gt;&lt;/tr&gt;
+  &lt;/table&gt;
+&lt;/td&gt;&lt;/tr&gt;&lt;/table&gt;
+    &lt;/div&gt;
+    &lt;aside style=&quot;flex:1;min-width:260px;&quot;&gt;
+      &lt;h2 style=&quot;font-size:14px;text-transform:uppercase;letter-spacing:0.05em;color:#6b7280;&quot;&gt;Brand check failed&lt;/h2&gt;
+
+      &lt;div style=&quot;border-left:3px solid #991b1b;padding:8px 12px;margin:0 0 10px;background:#fff;&quot;&gt;
+        &lt;strong&gt;CTA_COUNT&lt;/strong&gt;
+        &lt;span style=&quot;font-size:11px;color:#6b7280;&quot;&gt; · block · synthetic_poc_policy&lt;/span&gt;
+        &lt;div style=&quot;font-size:13px;color:#374151;&quot;&gt;expected exactly one cta block, found 0&lt;/div&gt;
+      &lt;/div&gt;
+
+      &lt;div style=&quot;border-left:3px solid #991b1b;padding:8px 12px;margin:0 0 10px;background:#fff;&quot;&gt;
+        &lt;strong&gt;CTA_DOMAIN&lt;/strong&gt;
+        &lt;span style=&quot;font-size:11px;color:#6b7280;&quot;&gt; · block · synthetic_poc_policy&lt;/span&gt;
+        &lt;div style=&quot;font-size:13px;color:#374151;&quot;&gt;cta is not a valid URL: &lt;/div&gt;
+      &lt;/div&gt;
+    &lt;/aside&gt;
+  &lt;/div&gt;
+&lt;/body&gt;
+&lt;/html&gt;
+"></iframe></div></div></article><article class="spane" id="w-messy-4"><h5>Brand rules run in code</h5><p class="from">read from <b>sample-runs/messy/lint.json</b></p><p class="snote">Status fail. 2 violations recorded. Hover a rule for the raw code.</p><ul class="tags"><li class="sev-block" title="CTA_COUNT: expected exactly one cta block, found 0">Wrong number of buttons</li><li class="sev-block" title="CTA_DOMAIN: cta is not a valid URL: ">Button points somewhere unapproved</li></ul></article><article class="spane" id="w-messy-5"><h5>The gate decides</h5><p class="from">read from <b>sample-runs/messy/decision.json</b></p><p class="snote">Gate blocked, on lint status fail.</p><span class="gate g-stop">Stopped</span><p class="score">reviewer score 0 &middot; Flagged: CTA_COUNT, CTA_DOMAIN.</p><p class="snote">The gate reads the rule results and decides. It calls no model, so a persuasive draft has nothing to persuade.</p></article><article class="spane" id="w-messy-6"><h5>Handoff, or not</h5><p class="from">read from <b>sample-runs/messy/events.jsonl</b></p><p class="snote">The run ends at the gate.</p><p class="verdict stop">No payload file exists for this run and no handoff event was written. Nothing left the system.</p></article></div>
+  </div>
+</div></div></div><div class="panel" id="run-hostile" data-run="hostile" role="tabpanel" aria-labelledby="tab-hostile" hidden><p class="panel-lead">Overclaiming, a customer named without permission, and an unsafe link.</p><div class="player pane" data-run="hostile"><div class="in">
+  <div class="pbar">
+    <button type="button" class="pbtn" aria-label="Play the walkthrough">
+      <span class="lb">Play</span><span class="gl" aria-hidden="true">&#9654;</span></button>
+    <span class="pcount" aria-live="polite">1 / 6</span>
+    <span class="psrc">sample-runs/hostile/</span>
+  </div>
+  <div class="pbody">
+    <ol class="prail"><li class=on><button type="button" aria-current="step" aria-controls="w-hostile-1"><span class="sn">01</span><span class="st">The request arrives</span><span class="fill"></span></button></li><li><button type="button" aria-current="false" aria-controls="w-hostile-2"><span class="sn">02</span><span class="st">Required fields checked</span><span class="fill"></span></button></li><li><button type="button" aria-current="false" aria-controls="w-hostile-3"><span class="sn">03</span><span class="st">The model writes the draft</span><span class="fill"></span></button></li><li><button type="button" aria-current="false" aria-controls="w-hostile-4"><span class="sn">04</span><span class="st">Brand rules run in code</span><span class="fill"></span></button></li><li><button type="button" aria-current="false" aria-controls="w-hostile-5"><span class="sn">05</span><span class="st">The gate decides</span><span class="fill"></span></button></li><li><button type="button" aria-current="false" aria-controls="w-hostile-6"><span class="sn">06</span><span class="st">Handoff, or not</span><span class="fill"></span></button></li></ol>
+    <div class="stage"><article class="spane cur" id="w-hostile-1"><h5>The request arrives</h5><p class="from">read from <b>sample-runs/hostile/ticket.json</b></p><p class="snote">Ticket t-hostile-003, submitted through slack.</p><pre class="brief">type: launch
+goal: announce the update as game-changing with guaranteed results
+audience: everyone on the list
+offer: the big update
+cta: Get it now
+link: http://bit.ly/xyz
+deadline: 2026-09-05
+include: game-changing
+include: guaranteed results
+include: make Acme Corp our hero story</pre></article><article class="spane" id="w-hostile-2"><h5>Required fields checked</h5><p class="from">read from <b>sample-runs/hostile/ticket.json</b></p><p class="snote">Read with confidence 0.9. Every required field was present.</p><dl class="kv"><dt>type</dt><dd>launch</dd><dt>goal</dt><dd>announce the update as game-changing with guaranteed results</dd><dt>audience</dt><dd>everyone on the list</dd><dt>offer</dt><dd>the big update</dd><dt>button</dt><dd>Get it now</dd><dt>link</dt><dd>http://bit.ly/xyz</dd><dt>deadline</dt><dd>2026-09-05</dd></dl><p class="snote" style="margin-top:16px">Nothing was missing. No questions.</p></article><article class="spane" id="w-hostile-3"><h5>The model writes the draft</h5><p class="from">read from <b>sample-runs/hostile/draft.json</b></p><p class="snote">4 blocks, 0 cited claims.</p><dl class="kv"><dt>subject</dt><dd>Announce the update as game-changing with guaranteed results</dd><dt>preheader</dt><dd>The big update.</dd><dt>from</dt><dd>Northwind Studio</dd><dt>blocks</dt><dd>hero, body, cta, footer</dd><dt>button</dt><dd>Get it now</dd></dl><div class="prev"><div class="prev-bar">The email it produced</div><div class="prev-scale"><iframe title="The email produced by the hostile run" sandbox srcdoc="&lt;!doctype html&gt;
+&lt;html&gt;
+&lt;head&gt;
+&lt;meta charset=&quot;utf-8&quot;&gt;
+&lt;title&gt;Preview · t-hostile-003&lt;/title&gt;
+&lt;/head&gt;
+&lt;body style=&quot;margin:0;font-family:Helvetica,Arial,sans-serif;background:#f3f4f6;&quot;&gt;
+  &lt;div style=&quot;padding:16px 24px;background:#111827;color:#fff;&quot;&gt;
+    &lt;strong&gt;Announce the update as game-changing with guaranteed results&lt;/strong&gt;
+    &lt;span style=&quot;margin-left:16px;padding:2px 10px;border-radius:99px;background:#991b1b;font-size:12px;&quot;&gt;Stopped&lt;/span&gt;
+    &lt;div style=&quot;font-size:12px;color:#9ca3af;&quot;&gt;Northwind Studio &amp;lt;hello@northwindstudio.example&amp;gt; · preheader: The big update.&lt;/div&gt;
+  &lt;/div&gt;
+  &lt;div style=&quot;display:flex;gap:24px;align-items:flex-start;padding:24px;&quot;&gt;
+    &lt;div style=&quot;flex:0 0 auto;background:#fff;border:1px solid #e5e7eb;&quot;&gt;
+&lt;table role=&quot;presentation&quot; width=&quot;100%&quot; cellpadding=&quot;0&quot; cellspacing=&quot;0&quot;&gt;&lt;tr&gt;&lt;td align=&quot;center&quot;&gt;
+  &lt;table role=&quot;presentation&quot; width=&quot;600&quot; cellpadding=&quot;0&quot; cellspacing=&quot;0&quot; style=&quot;width:600px;max-width:100%;font-family:Helvetica,Arial,sans-serif;color:#111;&quot;&gt;
+      &lt;tr&gt;&lt;td style=&quot;padding:8px 24px;&quot;&gt;&lt;h1 style=&quot;font-size:24px;line-height:32px;margin:0;&quot;&gt;Announce the update as &lt;mark style=&quot;background:#fef08a;&quot;&gt;game-changing&lt;/mark&gt; with &lt;mark style=&quot;background:#fef08a;&quot;&gt;guaranteed results&lt;/mark&gt;&lt;/h1&gt;&lt;/td&gt;&lt;/tr&gt;
+      &lt;tr&gt;&lt;td style=&quot;padding:8px 24px;&quot;&gt;&lt;p style=&quot;font-size:15px;line-height:24px;&quot;&gt;{% if customer.first_name %}Hi {{ customer.first_name }},{% else %}Hi there,{% endif %} We put together the big update. Game-changing. Guaranteed results. &lt;mark style=&quot;background:#fef08a;&quot;&gt;Make Acme Corp&lt;/mark&gt; our hero story.&lt;/p&gt;&lt;/td&gt;&lt;/tr&gt;
+      &lt;tr&gt;&lt;td style=&quot;padding:8px 24px;&quot;&gt;&lt;a href=&quot;http://bit.ly/xyz&quot; style=&quot;display:inline-block;background:#1F6FEB;color:#ffffff;padding:12px 20px;border-radius:6px;text-decoration:none;&quot;&gt;Get it now&lt;/a&gt;&lt;/td&gt;&lt;/tr&gt;
+      &lt;tr&gt;&lt;td style=&quot;padding:8px 24px;&quot;&gt;&lt;!-- Locked footer chrome. Attached by application code (attachFooter), never
+     emitted by the model. Contains the unsubscribe link and postal address
+     that CAN_UNSUB / CAN_ADDRESS check for. --&gt;
+&lt;table role=&quot;presentation&quot; width=&quot;100%&quot; cellpadding=&quot;0&quot; cellspacing=&quot;0&quot; style=&quot;border-top:1px solid #e5e5e5;margin-top:32px;&quot;&gt;
+  &lt;tr&gt;
+    &lt;td style=&quot;padding:24px 0;font-family:Helvetica,Arial,sans-serif;font-size:12px;line-height:18px;color:#6b7280;&quot;&gt;
+      Northwind Studio, 100 Harbor Way, Suite 400, Oakland, CA 94607&lt;br&gt;
+      You are receiving this because you have a Northwind Studio account.&lt;br&gt;
+      &lt;a href=&quot;https://www.northwindstudio.example/unsubscribe&quot; style=&quot;color:#6b7280;text-decoration:underline;&quot;&gt;Unsubscribe&lt;/a&gt;
+    &lt;/td&gt;
+  &lt;/tr&gt;
+&lt;/table&gt;
+&lt;/td&gt;&lt;/tr&gt;
+  &lt;/table&gt;
+&lt;/td&gt;&lt;/tr&gt;&lt;/table&gt;
+    &lt;/div&gt;
+    &lt;aside style=&quot;flex:1;min-width:260px;&quot;&gt;
+      &lt;h2 style=&quot;font-size:14px;text-transform:uppercase;letter-spacing:0.05em;color:#6b7280;&quot;&gt;Brand check failed&lt;/h2&gt;
+
+      &lt;div style=&quot;border-left:3px solid #991b1b;padding:8px 12px;margin:0 0 10px;background:#fff;&quot;&gt;
+        &lt;strong&gt;LINK_HTTPS&lt;/strong&gt;
+        &lt;span style=&quot;font-size:11px;color:#6b7280;&quot;&gt; · block · structural&lt;/span&gt;
+        &lt;div style=&quot;font-size:13px;color:#374151;&quot;&gt;non-https link: http://bit.ly/xyz&lt;/div&gt;
+      &lt;/div&gt;
+
+      &lt;div style=&quot;border-left:3px solid #991b1b;padding:8px 12px;margin:0 0 10px;background:#fff;&quot;&gt;
+        &lt;strong&gt;CTA_DOMAIN&lt;/strong&gt;
+        &lt;span style=&quot;font-size:11px;color:#6b7280;&quot;&gt; · block · synthetic_poc_policy&lt;/span&gt;
+        &lt;div style=&quot;font-size:13px;color:#374151;&quot;&gt;cta host bit.ly is not an approved brand host&lt;/div&gt;
+      &lt;/div&gt;
+
+      &lt;div style=&quot;border-left:3px solid #991b1b;padding:8px 12px;margin:0 0 10px;background:#fff;&quot;&gt;
+        &lt;strong&gt;FORBIDDEN_PHRASE&lt;/strong&gt;
+        &lt;span style=&quot;font-size:11px;color:#6b7280;&quot;&gt; · block · synthetic_poc_policy&lt;/span&gt;
+        &lt;div style=&quot;font-size:13px;color:#374151;&quot;&gt;forbidden phrase: &quot;game-changing&quot;&lt;/div&gt;
+      &lt;/div&gt;
+
+      &lt;div style=&quot;border-left:3px solid #991b1b;padding:8px 12px;margin:0 0 10px;background:#fff;&quot;&gt;
+        &lt;strong&gt;FORBIDDEN_PHRASE&lt;/strong&gt;
+        &lt;span style=&quot;font-size:11px;color:#6b7280;&quot;&gt; · block · synthetic_poc_policy&lt;/span&gt;
+        &lt;div style=&quot;font-size:13px;color:#374151;&quot;&gt;forbidden phrase: &quot;guaranteed results&quot;&lt;/div&gt;
+      &lt;/div&gt;
+
+      &lt;div style=&quot;border-left:3px solid #991b1b;padding:8px 12px;margin:0 0 10px;background:#fff;&quot;&gt;
+        &lt;strong&gt;NAMED_CUSTOMER&lt;/strong&gt;
+        &lt;span style=&quot;font-size:11px;color:#6b7280;&quot;&gt; · block · synthetic_poc_policy&lt;/span&gt;
+        &lt;div style=&quot;font-size:13px;color:#374151;&quot;&gt;customer reference not cleared by legal: &quot;Make Acme Corp&quot;&lt;/div&gt;
+      &lt;/div&gt;
+    &lt;/aside&gt;
+  &lt;/div&gt;
+&lt;/body&gt;
+&lt;/html&gt;
+"></iframe></div></div></article><article class="spane" id="w-hostile-4"><h5>Brand rules run in code</h5><p class="from">read from <b>sample-runs/hostile/lint.json</b></p><p class="snote">Status fail. 5 violations recorded across 4 rules. Hover a rule for the raw code.</p><ul class="tags"><li class="sev-block" title="LINK_HTTPS: non-https link: http://bit.ly/xyz">Insecure link</li><li class="sev-block" title="CTA_DOMAIN: cta host bit.ly is not an approved brand host">Button points somewhere unapproved</li><li class="sev-block" title="FORBIDDEN_PHRASE: forbidden phrase: &quot;game-changing&quot;">Banned marketing phrase</li><li class="sev-block" title="NAMED_CUSTOMER: customer reference not cleared by legal: &quot;Make Acme Corp&quot;">Names a customer without permission</li></ul></article><article class="spane" id="w-hostile-5"><h5>The gate decides</h5><p class="from">read from <b>sample-runs/hostile/decision.json</b></p><p class="snote">Gate blocked, on lint status fail.</p><span class="gate g-stop">Stopped</span><p class="score">reviewer score 0 &middot; Flagged: LINK_HTTPS, CTA_DOMAIN, FORBIDDEN_PHRASE, FORBIDDEN_PHRASE, NAMED_CUSTOMER.</p><p class="snote">The gate reads the rule results and decides. It calls no model, so a persuasive draft has nothing to persuade.</p></article><article class="spane" id="w-hostile-6"><h5>Handoff, or not</h5><p class="from">read from <b>sample-runs/hostile/events.jsonl</b></p><p class="snote">The run ends at the gate.</p><p class="verdict stop">No payload file exists for this run and no handoff event was written. Nothing left the system.</p></article></div>
+  </div>
+</div></div></div><div class="panel" id="run-break" data-run="break" role="tabpanel" aria-labelledby="tab-break" hidden><p class="panel-lead">A clean request with an invented number slipped in. The one worth watching.</p><div class="player pane" data-run="break"><div class="in">
+  <div class="pbar">
+    <button type="button" class="pbtn" aria-label="Play the walkthrough">
+      <span class="lb">Play</span><span class="gl" aria-hidden="true">&#9654;</span></button>
+    <span class="pcount" aria-live="polite">1 / 6</span>
+    <span class="psrc">sample-runs/break/</span>
+  </div>
+  <div class="pbody">
+    <ol class="prail"><li class=on><button type="button" aria-current="step" aria-controls="w-break-1"><span class="sn">01</span><span class="st">The request arrives</span><span class="fill"></span></button></li><li><button type="button" aria-current="false" aria-controls="w-break-2"><span class="sn">02</span><span class="st">Required fields checked</span><span class="fill"></span></button></li><li><button type="button" aria-current="false" aria-controls="w-break-3"><span class="sn">03</span><span class="st">The model writes the draft</span><span class="fill"></span></button></li><li><button type="button" aria-current="false" aria-controls="w-break-4"><span class="sn">04</span><span class="st">Brand rules run in code</span><span class="fill"></span></button></li><li><button type="button" aria-current="false" aria-controls="w-break-5"><span class="sn">05</span><span class="st">The gate decides</span><span class="fill"></span></button></li><li><button type="button" aria-current="false" aria-controls="w-break-6"><span class="sn">06</span><span class="st">Handoff, or not</span><span class="fill"></span></button></li></ol>
+    <div class="stage"><article class="spane cur" id="w-break-1"><h5>The request arrives</h5><p class="from">read from <b>sample-runs/break/ticket.json</b></p><p class="snote">Ticket t-break-004, submitted through request_form.</p><pre class="brief">type: nurture
+goal: Help design leads roll out a shared design system
+audience: design system leads at mid-size product teams
+offer: a guided walkthrough of the Northwind design system workspace
+cta: See the walkthrough
+link: https://www.northwindstudio.example/walkthrough
+deadline: 2026-09-16
+include: Northwind is built for organization-wide design systems
+avoid: pricing talk
+include: teams see a 47 percent ROI in year one</pre></article><article class="spane" id="w-break-2"><h5>Required fields checked</h5><p class="from">read from <b>sample-runs/break/ticket.json</b></p><p class="snote">Read with confidence 0.7. 1 question raised.</p><dl class="kv"><dt>type</dt><dd>nurture</dd><dt>goal</dt><dd>Help design leads roll out a shared design system</dd><dt>audience</dt><dd>design system leads at mid-size product teams</dd><dt>offer</dt><dd>a guided walkthrough of the Northwind design system workspace</dd><dt>button</dt><dd>See the walkthrough</dd><dt>link</dt><dd>https://www.northwindstudio.example/walkthrough</dd><dt>deadline</dt><dd>2026-09-16</dd></dl><h4 style="margin-top:20px">What it asked for</h4><ul class="qs"><li>uncleared claim &quot;47 percent&quot; is not in the approved claims library. Get it approved or drop it.</li></ul></article><article class="spane" id="w-break-3"><h5>The model writes the draft</h5><p class="from">read from <b>sample-runs/break/draft.json</b></p><p class="snote">4 blocks, 1 cited claim.</p><dl class="kv"><dt>subject</dt><dd>Help design leads roll out a shared design system</dd><dt>preheader</dt><dd>A guided walkthrough of the Northwind design system workspace.</dd><dt>from</dt><dd>Northwind Studio</dd><dt>blocks</dt><dd>hero, body, cta, footer</dd><dt>button</dt><dd>See the walkthrough</dd></dl><h4 style="margin-top:20px">What it pointed at</h4><ul class="tags"><li class="sev-warn" title="Northwind is built for organization-wide design systems">claim.design_systems</li></ul><div class="prev"><div class="prev-bar">The email it produced</div><div class="prev-scale"><iframe title="The email produced by the break run" sandbox srcdoc="&lt;!doctype html&gt;
+&lt;html&gt;
+&lt;head&gt;
+&lt;meta charset=&quot;utf-8&quot;&gt;
+&lt;title&gt;Preview · t-break-004&lt;/title&gt;
+&lt;/head&gt;
+&lt;body style=&quot;margin:0;font-family:Helvetica,Arial,sans-serif;background:#f3f4f6;&quot;&gt;
+  &lt;div style=&quot;padding:16px 24px;background:#111827;color:#fff;&quot;&gt;
+    &lt;strong&gt;Help design leads roll out a shared design system&lt;/strong&gt;
+    &lt;span style=&quot;margin-left:16px;padding:2px 10px;border-radius:99px;background:#991b1b;font-size:12px;&quot;&gt;Stopped&lt;/span&gt;
+    &lt;div style=&quot;font-size:12px;color:#9ca3af;&quot;&gt;Northwind Studio &amp;lt;hello@northwindstudio.example&amp;gt; · preheader: A guided walkthrough of the Northwind design system workspace.&lt;/div&gt;
+  &lt;/div&gt;
+  &lt;div style=&quot;display:flex;gap:24px;align-items:flex-start;padding:24px;&quot;&gt;
+    &lt;div style=&quot;flex:0 0 auto;background:#fff;border:1px solid #e5e7eb;&quot;&gt;
+&lt;table role=&quot;presentation&quot; width=&quot;100%&quot; cellpadding=&quot;0&quot; cellspacing=&quot;0&quot;&gt;&lt;tr&gt;&lt;td align=&quot;center&quot;&gt;
+  &lt;table role=&quot;presentation&quot; width=&quot;600&quot; cellpadding=&quot;0&quot; cellspacing=&quot;0&quot; style=&quot;width:600px;max-width:100%;font-family:Helvetica,Arial,sans-serif;color:#111;&quot;&gt;
+      &lt;tr&gt;&lt;td style=&quot;padding:8px 24px;&quot;&gt;&lt;h1 style=&quot;font-size:24px;line-height:32px;margin:0;&quot;&gt;Help design leads roll out a shared design system&lt;/h1&gt;&lt;/td&gt;&lt;/tr&gt;
+      &lt;tr&gt;&lt;td style=&quot;padding:8px 24px;&quot;&gt;&lt;p style=&quot;font-size:15px;line-height:24px;&quot;&gt;{% if customer.first_name %}Hi {{ customer.first_name }},{% else %}Hi there,{% endif %} We put together a guided walkthrough of the Northwind design system workspace. Northwind is built for organization-wide design systems. Teams see a &lt;mark style=&quot;background:#fef08a;&quot;&gt;47 percent&lt;/mark&gt; ROI in year one.&lt;/p&gt;&lt;/td&gt;&lt;/tr&gt;
+      &lt;tr&gt;&lt;td style=&quot;padding:8px 24px;&quot;&gt;&lt;a href=&quot;https://www.northwindstudio.example/walkthrough&quot; style=&quot;display:inline-block;background:#1F6FEB;color:#ffffff;padding:12px 20px;border-radius:6px;text-decoration:none;&quot;&gt;See the walkthrough&lt;/a&gt;&lt;/td&gt;&lt;/tr&gt;
+      &lt;tr&gt;&lt;td style=&quot;padding:8px 24px;&quot;&gt;&lt;!-- Locked footer chrome. Attached by application code (attachFooter), never
+     emitted by the model. Contains the unsubscribe link and postal address
+     that CAN_UNSUB / CAN_ADDRESS check for. --&gt;
+&lt;table role=&quot;presentation&quot; width=&quot;100%&quot; cellpadding=&quot;0&quot; cellspacing=&quot;0&quot; style=&quot;border-top:1px solid #e5e5e5;margin-top:32px;&quot;&gt;
+  &lt;tr&gt;
+    &lt;td style=&quot;padding:24px 0;font-family:Helvetica,Arial,sans-serif;font-size:12px;line-height:18px;color:#6b7280;&quot;&gt;
+      Northwind Studio, 100 Harbor Way, Suite 400, Oakland, CA 94607&lt;br&gt;
+      You are receiving this because you have a Northwind Studio account.&lt;br&gt;
+      &lt;a href=&quot;https://www.northwindstudio.example/unsubscribe&quot; style=&quot;color:#6b7280;text-decoration:underline;&quot;&gt;Unsubscribe&lt;/a&gt;
+    &lt;/td&gt;
+  &lt;/tr&gt;
+&lt;/table&gt;
+&lt;/td&gt;&lt;/tr&gt;
+  &lt;/table&gt;
+&lt;/td&gt;&lt;/tr&gt;&lt;/table&gt;
+    &lt;/div&gt;
+    &lt;aside style=&quot;flex:1;min-width:260px;&quot;&gt;
+      &lt;h2 style=&quot;font-size:14px;text-transform:uppercase;letter-spacing:0.05em;color:#6b7280;&quot;&gt;Brand check failed&lt;/h2&gt;
+
+      &lt;div style=&quot;border-left:3px solid #991b1b;padding:8px 12px;margin:0 0 10px;background:#fff;&quot;&gt;
+        &lt;strong&gt;CLAIM_NUMBER&lt;/strong&gt;
+        &lt;span style=&quot;font-size:11px;color:#6b7280;&quot;&gt; · block · synthetic_poc_policy&lt;/span&gt;
+        &lt;div style=&quot;font-size:13px;color:#374151;&quot;&gt;numeric claim without an approved source: &quot;47 percent&quot;&lt;/div&gt;
+      &lt;/div&gt;
+    &lt;/aside&gt;
+  &lt;/div&gt;
+&lt;/body&gt;
+&lt;/html&gt;
+"></iframe></div></div></article><article class="spane" id="w-break-4"><h5>Brand rules run in code</h5><p class="from">read from <b>sample-runs/break/lint.json</b></p><p class="snote">Status fail. 1 violation recorded. Hover a rule for the raw code.</p><ul class="tags"><li class="sev-block" title="CLAIM_NUMBER: numeric claim without an approved source: &quot;47 percent&quot;">A number with no approved source</li></ul></article><article class="spane" id="w-break-5"><h5>The gate decides</h5><p class="from">read from <b>sample-runs/break/decision.json</b></p><p class="snote">Gate blocked, on lint status fail.</p><span class="gate g-stop">Stopped</span><p class="score">reviewer score 0.4 &middot; Flagged: CLAIM_NUMBER.</p><p class="snote">The gate reads the rule results and decides. It calls no model, so a persuasive draft has nothing to persuade.</p></article><article class="spane" id="w-break-6"><h5>Handoff, or not</h5><p class="from">read from <b>sample-runs/break/events.jsonl</b></p><p class="snote">The run ends at the gate.</p><p class="verdict stop">No payload file exists for this run and no handoff event was written. Nothing left the system.</p></article></div>
+  </div>
+</div></div></div></div><p class="next"><a href="#reuse">Everything you just saw is reusable.<span class="arw" aria-hidden="true">&#8595;</span></a></p></div></section><section id="reuse"><div class="wrap rv"><p class="kicker"><span class="num">08</span>Built to be reused</p><h2>One email type, but the shape a second one inherits</h2><p class="lead">I did not build one email. I built the structure the next content type drops into.</p><div class="treewrap pane"><div class="in"><pre class="tree">email-cortex/
+  brand/      the voice, the approved claims, the locked footer
+  schemas/    the shape a request and a draft have to fit
+  prompts/    what the model is asked, versioned, with a changelog
+  skills/     one folder per email type, with its own settings
+  cio/        the short list of things the handoff is allowed to call
+  evals/      the test requests and the outcomes they have to produce</pre></div></div><div class="prose"><p>Five pieces carry over. The request structure, the approved claims, the rule checker, the test runner, and the locked footer. Account pages would be next.</p></div><div class="cards"><div class="card"><div class="in"><h3>Marketers own the words</h3><p>Brand voice, approved claims, and per-type settings are plain files a marketer can edit. Adding an approved claim is a sign-off, not an engineering ticket.</p></div></div><div class="card"><div class="in"><h3>Changes are versioned</h3><p>Prompts and skills carry version numbers. Changed behaviour means a new version, a changelog note, and a passing test run.</p></div></div><div class="card"><div class="in"><h3>Drift is visible</h3><p>Expected outputs live in the repository, so a behaviour change shows up as a readable diff.</p></div></div></div><p class="next"><a href="#measure">How we would know it worked.<span class="arw" aria-hidden="true">&#8595;</span></a></p></div></section><section id="measure"><div class="wrap rv"><p class="kicker"><span class="num">09</span>How we would know</p><h2>Write down what it costs now, before claiming anything</h2><p class="lead">Projects like this overclaim here, so the baseline gets written down first.</p><div class="tw pane"><div class="in"><div class="tscroll"><table><thead><tr><th>What we measure</th><th>What it means</th><th>How we would do it</th></tr></thead><tbody><tr><td>Where we start</td><td>40 to 60 requests a month at about two hours each. 960 to 1,440 hours a year before revisions</td><td>Written down before any saving is claimed. Queue time tracked separately from effort</td></tr><tr><td>Hours given back</td><td>Build hours returned, minus review and exception handling. Between 320 and 1,070 hours a year</td><td>Reported as a range. The load-bearing assumption is how many requests the system can help with, and it stays labelled an assumption until real data lands</td></tr><tr><td>Revenue it drives</td><td>Tests and sends that shipped, times what the existing programme converts at</td><td>A holdout group where the team allows one. Otherwise it is influenced revenue, not caused</td></tr><tr><td>Workflows running</td><td>How many of these run in production without me. One to start</td><td>It counts only with a named owner and a run in the last 30 days</td></tr><tr><td>Whether people use it</td><td>Weekly active requesters, how often people edit the draft, whether they come back</td><td>Events recorded at each stage of every run, grouped by who asked</td></tr></tbody></table></div></div></div><p class="next"><a href="#adoption">None of which matters if nobody uses it.<span class="arw" aria-hidden="true">&#8595;</span></a></p></div></section><section id="adoption"><div class="wrap rv"><p class="kicker"><span class="num">10</span>Getting people to use it</p><h2>Shipped is not the same as adopted</h2><p class="lead">Four weeks, one email type, and criteria for stopping written down in advance.</p><ol class="chain"><li><span class="n">01</span><p>Week one, two requesters and one reviewer, preview only</p></li><li><span class="n">02</span><p>Week two, turn on draft creation</p></li><li><span class="n">03</span><p>Week four, expand only if people edit less than 40% of drafts</p></li><li><span class="n">04</span><p>Days 30, 60 and 90, look back against the baseline</p></li></ol><div class="prose"><p>Nobody learns a tool. A requester pastes what they want and gets a preview link. The email team never leaves the tool they already use.</p><p>It stops if people edit more than 60% of what comes out, or if any automatic send path appears.</p><p>Adopted means runs that finish without me in the conversation. Not logins, not runs started. Two of five requesters using it is the finding, and it leads the review.</p></div><p class="next"><a href="#scope">Last, what I left out.<span class="arw" aria-hidden="true">&#8595;</span></a></p></div></section><section id="scope"><div class="wrap rv"><p class="kicker"><span class="num">11</span>What I left out</p><h2>What I did not build, and what I would ask for</h2><p class="lead">One slice that runs properly, rather than five that half-run.</p><div class="cards"><div class="card"><div class="in"><h3>Left out on purpose</h3><p>A live connection to the sending tool, Slack intake, automatic revision loops, every other email type, localisation, account pages, and any send path.</p></div></div><div class="card"><div class="in"><h3>What I am least sure about</h3><p>Which object in the sending tool the handoff should create. I held it as a setting, a one-line change either way. I have not confirmed where the team&#x27;s sends live.</p></div></div><div class="card"><div class="in"><h3>What I would ask for</h3><p>Four weeks on one email type, stopping criteria agreed first, and the test suite gating every write.</p></div></div></div></div></section>
+</main>
+
+<script>
+(function () {
+  var reduce = window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+  /* The rendered emails are a fixed 960px layout, so they scale to whatever
+     column they land in. This has to re-run whenever a frame goes from hidden
+     to visible: a hidden element measures zero width, and a frame measured at
+     zero collapses to nothing. Both the run tabs and the step player hide
+     things, so both call it. */
+  function scale(root) {
+    var boxes = (root || document).querySelectorAll('.prev-scale');
+    [].forEach.call(boxes, function (box) {
+      var f = box.querySelector('iframe');
+      if (!f || !box.clientWidth) return;
+      var k = box.clientWidth / 960;
+      f.style.transform = 'scale(' + k + ')';
+      box.style.height = Math.round(560 * k) + 'px';
+    });
+  }
+
+  /* ---- one step player per run --------------------------------------------
+     Advancement rides on the progress bar's animationend rather than a timer,
+     so pausing the animation pauses the walkthrough for free and the bar can
+     never drift out of sync with the pane it belongs to. */
+  function player(el) {
+    var rail = [].slice.call(el.querySelectorAll('.prail li'));
+    var panes = [].slice.call(el.querySelectorAll('.spane'));
+    var btn = el.querySelector('.pbtn');
+    var lbl = btn.querySelector('.lb');
+    var gl = btn.querySelector('.gl');
+    var count = el.querySelector('.pcount');
+    var i = 0, playing = false, started = false;
+
+    function paint() {
+      rail.forEach(function (li, k) {
+        li.classList.toggle('on', k === i);
+        li.classList.toggle('done', k < i);
+        li.querySelector('button').setAttribute('aria-current', k === i ? 'step' : 'false');
+      });
+      panes.forEach(function (p, k) { p.classList.toggle('cur', k === i); });
+      count.textContent = (i + 1) + ' / ' + panes.length;
+      scale(panes[i]);
+      keepVisible();
+    }
+    // On a phone the step list is a horizontal strip, so the active step can
+    // sit off screen while the walkthrough plays. Nudge the strip itself
+    // rather than calling scrollIntoView, which would drag the whole page.
+    function keepVisible() {
+      var strip = el.querySelector('.prail');
+      if (strip.scrollWidth <= strip.clientWidth) return;
+      var b = rail[i], want = b.offsetLeft - 12;
+      if (want < strip.scrollLeft || b.offsetLeft + b.offsetWidth > strip.scrollLeft + strip.clientWidth) {
+        strip.scrollTo ? strip.scrollTo({ left: want, behavior: 'smooth' }) : strip.scrollLeft = want;
+      }
+    }
+    function arm() {
+      // Restart the bar animation from zero. Reading offsetWidth forces the
+      // reflow that makes the removed class actually take effect.
+      var fill = rail[i].querySelector('.fill');
+      fill.style.animation = 'none';
+      void fill.offsetWidth;
+      fill.style.animation = '';
+    }
+    function setBtn() {
+      var done = !playing && i === panes.length - 1;
+      lbl.textContent = done ? 'Replay' : playing ? 'Pause' : 'Play';
+      gl.textContent = done ? '↺' : playing ? '‖' : '▶';
+      btn.setAttribute('aria-label', lbl.textContent + ' the walkthrough');
+    }
+    function go(n, keepPlaying) {
+      i = n; paint();
+      if (playing || keepPlaying) arm();
+      setBtn();
+    }
+    function play() {
+      if (i === panes.length - 1 && !playing) i = 0;
+      playing = true; el.classList.remove('paused'); go(i, true);
+    }
+    function pause() { playing = false; el.classList.add('paused'); setBtn(); }
+
+    rail.forEach(function (li, k) {
+      li.querySelector('button').addEventListener('click', function () {
+        pause(); go(k);
+      });
+      li.querySelector('.fill').addEventListener('animationend', function () {
+        if (!playing) return;
+        if (i < panes.length - 1) go(i + 1);
+        else { playing = false; setBtn(); }
+      });
+    });
+    btn.addEventListener('click', function () { playing ? pause() : play(); });
+
+    el.classList.add('on');
+    paint(); setBtn();
+
+    return {
+      // Autostart once, when the player is actually on screen. A walkthrough
+      // that has already run to the end is left alone.
+      wake: function () { if (!started) { started = true; play(); } },
+      rest: function () { if (playing) pause(); },
+      refresh: function () { paint(); }
+    };
+  }
+
+  var players = {};
+  [].forEach.call(document.querySelectorAll('.player'), function (el) {
+    if (!reduce) { players[el.getAttribute('data-run')] = player(el); return; }
+    // Reduced motion gets every step laid out at once, so the step list stops
+    // being a transport and becomes an index. Wire it up as one rather than
+    // leaving a row of buttons that do nothing.
+    [].forEach.call(el.querySelectorAll('.prail button'), function (b) {
+      b.addEventListener('click', function () {
+        var pane = document.getElementById(b.getAttribute('aria-controls'));
+        if (pane) pane.scrollIntoView({ block: 'start' });
+      });
+    });
+  });
+
+  /* ---- run picker ---------------------------------------------------------- */
+  var wrap = document.getElementById('runs');
+  var current = null;
+  if (wrap) {
+    var tabs = [].slice.call(wrap.querySelectorAll('[role=tab]'));
+    function show(i) {
+      tabs.forEach(function (t, k) {
+        var on = k === i;
+        t.setAttribute('aria-selected', on ? 'true' : 'false');
+        t.tabIndex = on ? 0 : -1;
+        var panel = document.getElementById(t.getAttribute('aria-controls'));
+        panel.hidden = !on;
+        if (on) current = panel.getAttribute('data-run');
+      });
+      var p = players[current];
+      if (p) p.refresh();
+      scale(document.getElementById('runs'));
+    }
+    tabs.forEach(function (t, i) {
+      t.addEventListener('click', function () {
+        var was = players[current];
+        if (was) was.rest();
+        show(i);
+      });
+      t.addEventListener('keydown', function (ev) {
+        var d = ev.key === 'ArrowRight' ? 1 : ev.key === 'ArrowLeft' ? -1 : 0;
+        if (!d) return;
+        ev.preventDefault();
+        var n = (i + d + tabs.length) % tabs.length;
+        tabs[n].focus(); tabs[n].click();
+      });
+    });
+    show(0);
+    window.addEventListener('resize', function () { scale(); });
+  }
+
+  if (!('IntersectionObserver' in window)) return;
+
+  /* Autostart the visible walkthrough, and stop it once it scrolls away so a
+     reader does not come back to a run that finished without them. */
+  var runsec = document.getElementById('run');
+  if (runsec) {
+    new IntersectionObserver(function (es) {
+      es.forEach(function (en) {
+        var p = players[current];
+        if (!p) return;
+        if (en.isIntersecting) p.wake(); else p.rest();
+      });
+    }, { threshold: 0.25 }).observe(runsec);
+  }
+
+  /* Entry reveals. */
+  var rvo = new IntersectionObserver(function (es) {
+    es.forEach(function (en) {
+      if (!en.isIntersecting) return;
+      en.target.classList.add('in');
+      rvo.unobserve(en.target);
+    });
+  }, { threshold: 0, rootMargin: '0px 0px -8% 0px' });
+  [].forEach.call(document.querySelectorAll('.rv'), function (n) { rvo.observe(n); });
+
+  /* Rail highlight. threshold 0 with a negative rootMargin, not 0.5: several
+     sections are taller than the viewport, so a half-visible test never fires
+     for them and the rail would stick on whichever short section came last. */
+  var links = {};
+  [].forEach.call(document.querySelectorAll('.rail ol a'), function (a) {
+    links[a.getAttribute('href').slice(1)] = a;
+  });
+  var io = new IntersectionObserver(function (es) {
+    es.forEach(function (en) {
+      if (!en.isIntersecting) return;
+      for (var k in links) links[k].classList.remove('on');
+      var a = links[en.target.id];
+      if (a) a.classList.add('on');
+    });
+  }, { threshold: 0, rootMargin: '-10% 0px -80% 0px' });
+  [].forEach.call(document.querySelectorAll('main section'), function (s) { io.observe(s); });
+})();
+</script>
+</body>
+</html>

@@ -1,0 +1,10 @@
+{
+  "gate": "blocked",
+  "lint_status": "fail",
+  "reviewer": {
+    "score": 0,
+    "notes": "Flagged: CTA_COUNT, CTA_DOMAIN."
+  },
+  "human_decision": "pending",
+  "note": ""
+}

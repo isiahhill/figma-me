@@ -1,0 +1,59 @@
+# poc-run 2026-09-13T02:36:03Z
+## npm test
+ℹ tests 88
+ℹ pass 88
+ℹ fail 0
+PASS  E1  clean nurture → ready_for_cio
+PASS  E2  messy Slack → needs_input, claim quarantined
+PASS  E3  hostile off-brand → blocked, no send path
+PASS  E4  wholesale does not trip the sale matcher
+PASS  E5  footer bypass → CAN_UNSUB + CAN_ADDRESS
+PASS  E6  implied claim → escalate, never auto-ready
+PASS  E7  prompt injection → inert data, never auto-ready
+PASS  E8  contradictory dates → needs_input names the conflict
+PASS  E9  oversized brief → whole ticket, bulk never in copy
+PASS  E10  wrong-language brief → asks for target language
+PASS  E11  malformed CTA link → LINK_HTTPS + CTA_DOMAIN block
+PASS  E12  competitor + legal terms → NAMED_CUSTOMER block, LEGAL_TERM escalate
+12 of 12 evals pass
+## npm run selfcheck
+> node --import tsx scripts/selfcheck.ts
+
+PASS  demo regenerated fresh, hostile  gate=blocked       violations=[LINK_HTTPS,CTA_DOMAIN,FORBIDDEN_PHRASE,FORBIDDEN_PHRASE,NAMED_CUSTOMER] NO payload
+PASS  break regenerated fresh, injected number blocked; no payload emitted
+PASS  npm test green with a real suite, 88 pass, 0 fail (floor 80)
+PASS  eval runner green incl. goldens, 12 of 12, ids present: E1,E2,E3,E4,E5,E6,E7,E8,E9,E10,E11,E12
+PASS  run folder clean, complete
+PASS  run folder messy, complete
+PASS  run folder hostile, complete
+PASS  run folder break, complete
+PASS  events.jsonl present, four pipeline stages, no copy text, clean=intake,draft,gate,handoff; 4 runs, ids and outcomes only
+PASS  clean payload is createDesignStudioEmail, createDesignStudioEmail
+PASS  clean payload carries footer, unsub + address in html
+PASS  clean draft has one primary CTA on brand host, https://www.northwindstudio.example/walkthrough
+PASS  hostile run blocked with no payload, gate=blocked
+PASS  break run blocked with no payload, gate=blocked
+PASS  break run fired CLAIM_NUMBER, CLAIM_NUMBER
+PASS  messy run quarantined the uncleared claim, 6 needs_input, copy clean
+PASS  no send/schedule/trigger keys in any artifact, clean
+PASS  allowlist = two create methods, createDesignStudioEmail,createNewsletter
+PASS  skill email-nurture import-shaped, skills/email-nurture/SKILL.md
+PASS  skill email-launch import-shaped, skills/email-launch/SKILL.md
+PASS  only build inputs are tracked, clean
+PASS  working notes stay ignored
+PASS  player aspect ratio matches the MP4, page declares 1920x1080 (1.7778), media/walkthrough.mp4 is 1920x1080 (1.7778), drift 0.000%
+
+23 of 23 selfchecks pass
+## npm run demo
+> email-cortex@0.1.0 demo
+> node --import tsx src/pipeline.ts demo
+
+clean    gate=ready_for_cio violations=[none] payload written
+messy    gate=blocked       violations=[CTA_COUNT,CTA_DOMAIN] NO payload
+hostile  gate=blocked       violations=[LINK_HTTPS,CTA_DOMAIN,FORBIDDEN_PHRASE,FORBIDDEN_PHRASE,NAMED_CUSTOMER] NO payload
+## npm run break
+> email-cortex@0.1.0 break
+> node --import tsx src/pipeline.ts break
+
+break    gate=blocked       violations=[CLAIM_NUMBER] NO payload
+injected number blocked; no payload emitted

@@ -1,0 +1,5 @@
+{
+  "ticket_id": "t-dates-008",
+  "source": "slack",
+  "raw": "type: launch\ngoal: Announce the new Handoff inspector to engineering leads\naudience: engineering leads on Northwind team plans\noffer: an early look at the Handoff inspector\ncta: See what changed\nlink: https://www.northwindstudio.example/handoff\ndeadline: 2026-09-16\ninclude: Handoff gives developers a faster path from design to code\n\n(thread reply, two hours later)\ndeadline: 2026-09-23"
+}

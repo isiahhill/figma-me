@@ -1,0 +1,19 @@
+# Marketer-editable knobs for the nurture play. The pipeline reads this at
+# run time; changing it does not require a code change, only a PR + eval run.
+play: email-nurture
+version: 1
+ticket_type: nurture
+
+# Customer.io handoff pattern. design_studio is the default everywhere:
+# create attaches no audience and cannot send. newsletter exists only as a
+# launch-play flag (see ../email-launch/play.yaml).
+cio_pattern: design_studio
+
+# HITL thresholds consumed by the gate (mirrors the locked gate logic).
+thresholds:
+  reviewer_min_score: 0.7
+  ticket_min_confidence: 0.7
+
+# Rewrites are proposals attached for the reviewer, never auto-applied to
+# escalated or blocked spans.
+rewrite_proposals: warn_and_escalate_spans_only

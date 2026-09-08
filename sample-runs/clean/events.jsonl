@@ -1,0 +1,4 @@
+{"stage":"intake","ticket_id":"t-clean-001","requester":"request_form","type":"nurture","confidence":0.9,"needs_input_count":0}
+{"stage":"draft","ticket_id":"t-clean-001","block_count":4,"citation_count":1,"needs_input_count":0,"lint_status":"pass"}
+{"stage":"gate","ticket_id":"t-clean-001","gate":"ready_for_cio","lint_status":"pass","violation_ids":[],"reviewer_score":0.95,"needs_input_count":0}
+{"stage":"handoff","ticket_id":"t-clean-001","gate":"ready_for_cio","sdk":"createDesignStudioEmail"}

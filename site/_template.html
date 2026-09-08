@@ -1,0 +1,568 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title><!--TITLE--></title>
+<meta name="description" content="A messy request goes in, an on-brand draft comes out, and a person still says yes before anything ships.">
+<meta name="robots" content="noindex">
+<link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'><rect width='32' height='32' rx='8' fill='%234d49fc'/><rect x='9' y='12' width='14' height='9' rx='2' fill='%23fff'/></svg>">
+<style>
+/* Light only, by instruction. No prefers-color-scheme block, no theme toggle,
+   and every colour resolves on :root so nothing depends on a media query.
+
+   Fonts resolve to the platform UI face. The page has to render with the wifi
+   off, so there is nothing to fetch and no webfont that can fail to arrive. */
+:root{
+  --brand:#4d49fc; --brand-soft:#eeedff; --brand-ink:#3b37e0;
+  --ink:#0b0b12; --body:#33333d; --muted:#6c6c7a; --faint:#9a9aa8;
+  --ground:#f4f4f7; --surface:#fff; --tint:#f7f7fa; --tint2:#eeeef3;
+  --hair:#e6e6ec; --hair2:#eeeef2;
+  --ok:#0d6c3e; --ok-bg:#e7f6ee; --ok-line:#bde5cd;
+  --stop:#a8231c; --stop-bg:#fdeceb; --stop-line:#f4c9c6;
+  --warn:#7d5100; --warn-bg:#fcf3e1; --warn-line:#efdcb4;
+  --mono:ui-monospace,SFMono-Regular,"SF Mono",Menlo,Consolas,monospace;
+  --sans:system-ui,-apple-system,"Segoe UI Variable Text","Segoe UI",sans-serif;
+  --ease:cubic-bezier(.32,.72,0,1);
+  --r-out:22px; --r-in:15px; --pad:7px;
+  --rail:238px; --max:1140px;
+  --shadow:0 1px 1px rgba(16,16,32,.035), 0 22px 46px -28px rgba(16,16,32,.22);
+  --shadow-sm:0 1px 1px rgba(16,16,32,.03), 0 10px 24px -18px rgba(16,16,32,.20);
+}
+*{box-sizing:border-box}
+html{-webkit-text-size-adjust:100%;scroll-behavior:smooth}
+body{margin:0;background:var(--ground);color:var(--body);font-family:var(--sans);
+  font-size:17px;line-height:1.62;font-feature-settings:"tnum" 1,"cv05" 1;
+  -webkit-font-smoothing:antialiased;text-rendering:optimizeLegibility}
+a{color:var(--brand-ink);text-decoration:none}
+:focus-visible{outline:2px solid var(--brand);outline-offset:3px;border-radius:6px}
+
+/* ---- the nested enclosure -------------------------------------------------
+   Nothing sits flat on the ground. A block is an outer tray with a hairline
+   and a small pad, holding an inner surface with its own concentric radius.
+   Two classes, used everywhere, so the whole page shares one depth model. */
+.pane{background:rgba(255,255,255,.66);border:1px solid var(--hair);
+  border-radius:var(--r-out);padding:var(--pad);box-shadow:var(--shadow)}
+.pane>.in{background:var(--surface);border:1px solid var(--hair2);
+  border-radius:var(--r-in);overflow:hidden}
+.pane.flush{padding:var(--pad);box-shadow:var(--shadow-sm)}
+
+/* ---- reveal on entry ------------------------------------------------------
+   Guarded behind .js so the page is fully readable with scripting off, and
+   moves only transform and opacity so it never triggers layout. */
+.js .rv{opacity:0;transform:translate3d(0,20px,0);
+  transition:opacity .72s var(--ease),transform .72s var(--ease)}
+.js .rv.in{opacity:1;transform:none}
+@media (prefers-reduced-motion:reduce){
+  html{scroll-behavior:auto}
+  *{animation:none!important;transition:none!important}
+  .js .rv{opacity:1;transform:none}
+}
+
+/* ---- section rail ---------------------------------------------------------
+   A reader landing mid page needs to know where they are and how much is
+   left. On a phone it becomes a scrolling strip pinned to the top. */
+.rail{position:fixed;inset:0 auto 0 0;width:var(--rail);background:#0a0a0f;color:#fff;
+  padding:30px 0 22px;display:flex;flex-direction:column;z-index:10;
+  box-shadow:inset -1px 0 0 rgba(255,255,255,.07)}
+.rail .brand{padding:0 22px 24px;display:flex;align-items:center;gap:11px}
+/* The mark stands on its own rather than sitting on a tinted plate. It is
+   already a five-colour shape and a coloured ground behind it just muddies
+   the green and the blue. The SVG is 54x80, so height drives the size and the
+   width follows. */
+.rail .brand .mk{height:26px;flex:none;display:grid;place-items:center}
+.rail .brand .mk svg{height:26px;width:auto;display:block;
+  filter:drop-shadow(0 3px 10px rgba(0,0,0,.45))}
+.rail .brand b{color:#fff;font-weight:600;font-size:13.5px;letter-spacing:-.012em;display:block}
+.rail .brand span i{color:#7d7d8c;font-size:11px;display:block;margin-top:1px;
+  font-style:normal;letter-spacing:.01em}
+.rail ol{list-style:none;margin:0;padding:0 10px;counter-reset:r;overflow-y:auto}
+.rail li{counter-increment:r}
+.rail ol a{display:flex;gap:10px;padding:8px 12px;color:#80808f;font-size:13px;
+  line-height:1.35;border-radius:9px;position:relative;
+  transition:color .28s var(--ease),background-color .28s var(--ease)}
+.rail ol a::before{content:counter(r,decimal-leading-zero);font-family:var(--mono);
+  font-size:10px;color:#46464f;padding-top:3px;transition:color .28s var(--ease)}
+.rail ol a:hover{color:#fff;background:rgba(255,255,255,.05)}
+.rail ol a.on{color:#fff;background:rgba(255,255,255,.08)}
+.rail ol a.on::before{color:var(--brand)}
+.rail .foot{margin-top:auto;padding:18px 22px 0;color:#55555f;font-size:10.5px;
+  letter-spacing:.1em;text-transform:uppercase}
+main{margin-left:var(--rail)}
+.wrap{max-width:var(--max);margin:0 auto;padding:0 clamp(20px,4vw,60px)}
+
+/* ---- vertical rhythm ------------------------------------------------------
+   One spacing ladder: 96px between sections at desktop, everything inside a
+   section stepping in multiples of a 6px base. */
+section{padding:clamp(56px,7.2vw,104px) 0;scroll-margin-top:12px;position:relative}
+section+section::before{content:"";position:absolute;top:0;left:clamp(20px,4vw,60px);
+  right:clamp(20px,4vw,60px);height:1px;background:var(--hair);max-width:var(--max);
+  margin:0 auto}
+#recommendation{padding-top:clamp(48px,6vw,92px)}
+
+.kicker{display:inline-flex;align-items:center;gap:9px;font-size:10.5px;letter-spacing:.16em;
+  text-transform:uppercase;color:var(--brand-ink);font-weight:600;margin:0 0 22px;
+  background:var(--brand-soft);border:1px solid #dedcff;border-radius:100px;padding:5px 13px 5px 9px}
+.kicker .num{font-family:var(--mono);color:#8f8dd6;letter-spacing:0;font-size:10px}
+h1,h2{color:var(--ink);letter-spacing:-.028em;margin:0 0 22px;font-weight:500}
+h1{font-size:clamp(34px,5vw,56px);line-height:1.04;max-width:16ch;font-weight:450}
+h2{font-size:clamp(26px,3.3vw,40px);line-height:1.1;max-width:20ch}
+h4.sub-h{font-size:15px;font-weight:600;color:var(--ink);text-transform:none;
+  letter-spacing:-.01em;margin:40px 0 0}
+h4{font-size:10.5px;letter-spacing:.13em;text-transform:uppercase;color:var(--faint);
+  font-weight:600;margin:0 0 12px}
+.lead{font-size:clamp(18px,1.75vw,21px);line-height:1.5;color:var(--body);max-width:60ch;
+  margin:0 0 34px;letter-spacing:-.011em}
+.prose{max-width:66ch;margin:34px 0 0}
+.prose p{margin:0 0 18px}
+.prose p:last-child{margin-bottom:0}
+
+.next{margin:44px 0 0;max-width:64ch}
+.next a{display:inline-flex;align-items:center;gap:12px;font-size:15px;font-weight:500;
+  color:var(--ink);background:var(--surface);border:1px solid var(--hair);
+  border-radius:100px;padding:8px 8px 8px 20px;box-shadow:var(--shadow-sm);
+  transition:transform .4s var(--ease),box-shadow .4s var(--ease)}
+.next a .arw{width:30px;height:30px;border-radius:100px;background:var(--tint2);
+  display:grid;place-items:center;color:var(--brand-ink);font-size:13px;
+  transition:transform .4s var(--ease),background-color .4s var(--ease)}
+.next a:hover{transform:translate3d(0,-2px,0);box-shadow:0 1px 1px rgba(16,16,32,.04),0 18px 30px -18px rgba(16,16,32,.30)}
+.next a:hover .arw{background:var(--brand-soft);transform:translate3d(0,2px,0)}
+.next a:active{transform:scale(.985)}
+
+/* ---- stats ----------------------------------------------------------------
+   One tray holding four cells, rather than four floating boxes. */
+.stats{display:grid;grid-template-columns:repeat(auto-fit,minmax(148px,1fr));gap:1px;
+  background:var(--hair2);margin:0}
+.statwrap{margin:38px 0 0}
+.stat{background:var(--surface);padding:22px 20px}
+.stat b{display:block;font-family:var(--mono);font-size:clamp(24px,2.6vw,30px);font-weight:600;
+  color:var(--ink);letter-spacing:-.03em;line-height:1.05}
+.stat span{display:block;margin-top:9px;font-size:12.5px;color:var(--muted);line-height:1.4}
+
+/* ---- cards ---------------------------------------------------------------- */
+.cards{display:grid;grid-template-columns:repeat(auto-fit,minmax(258px,1fr));gap:14px;margin:30px 0 0}
+.card{background:rgba(255,255,255,.66);border:1px solid var(--hair);border-radius:var(--r-out);
+  padding:var(--pad);box-shadow:var(--shadow-sm);
+  transition:transform .5s var(--ease),box-shadow .5s var(--ease)}
+.card:hover{transform:translate3d(0,-3px,0);box-shadow:0 1px 1px rgba(16,16,32,.04),0 26px 44px -28px rgba(16,16,32,.30)}
+.card .in{background:var(--surface);border:1px solid var(--hair2);border-radius:var(--r-in);
+  padding:22px 22px 24px;height:100%}
+.card h3{margin:0 0 9px;font-size:15.5px;font-weight:600;color:var(--ink);line-height:1.32;
+  letter-spacing:-.012em}
+.card p{margin:0;font-size:14.5px;line-height:1.58;color:var(--body)}
+
+/* ---- table ---------------------------------------------------------------- */
+.tw{margin:32px 0 0}
+.tscroll{overflow-x:auto;-webkit-overflow-scrolling:touch;border-radius:var(--r-in)}
+table{border-collapse:collapse;width:100%;min-width:620px;font-size:14.5px}
+th{background:var(--tint);color:var(--ink);font-weight:600;text-align:left;padding:13px 16px;
+  border-bottom:1px solid var(--hair);font-size:13px;letter-spacing:-.006em}
+th.em,td.em{background:#f4f3ff}
+th.em{color:var(--brand-ink)}
+td{padding:14px 16px;border-bottom:1px solid var(--hair2);vertical-align:top;line-height:1.5}
+tbody tr:last-child td{border-bottom:0;font-weight:600;background:var(--tint)}
+tbody tr:last-child td.em{background:#e9e8ff;color:var(--ink)}
+
+/* ---- the six stage chain --------------------------------------------------- */
+.chain{display:flex;flex-wrap:wrap;gap:10px;margin:32px 0 0;padding:0;list-style:none}
+.chain li{flex:1 1 172px;background:var(--surface);border:1px solid var(--hair);
+  border-radius:14px;padding:15px 17px;min-width:0;box-shadow:var(--shadow-sm)}
+.chain .n{font-family:var(--mono);font-size:10.5px;color:var(--brand-ink);font-weight:600;
+  display:block;margin-bottom:7px;letter-spacing:.04em}
+.chain p{margin:0;font-size:14px;line-height:1.48}
+
+/* ---- pipeline -------------------------------------------------------------- */
+.stepwrap{margin:32px 0 0}
+.steps{margin:0;padding:0;list-style:none}
+.steps li{display:flex;gap:16px;align-items:baseline;padding:13px 20px;
+  border-bottom:1px solid var(--hair2)}
+.steps li:last-child{border-bottom:0}
+.steps li:nth-child(odd){background:#fcfcfd}
+.steps .n{font-family:var(--mono);font-size:11px;color:var(--faint);flex:none;width:20px}
+.steps p{margin:0;flex:1;font-size:14.5px;line-height:1.5;min-width:0;color:var(--body)}
+.steps .who{font-size:10.5px;font-weight:600;letter-spacing:.04em;padding:3px 10px;
+  border-radius:100px;flex:none;white-space:nowrap}
+.w-AI .who{background:var(--brand-soft);color:var(--brand-ink)}
+.w-code .who{background:#14141c;color:#fff}
+.w-human .who{background:#fff;color:var(--ink);box-shadow:inset 0 0 0 1px var(--hair)}
+.w-system .who{background:var(--tint2);color:var(--muted)}
+.legend{display:flex;flex-wrap:wrap;gap:8px 22px;align-items:center;margin:18px 0 0;
+  font-size:13px;color:var(--muted)}
+.legend .k{width:11px;height:11px;border-radius:4px;display:inline-block;margin-right:3px}
+.legend .k.w-AI{background:var(--brand)}
+.legend .k.w-code{background:#14141c}
+.legend .k.w-human{background:#fff;box-shadow:inset 0 0 0 1px var(--hair)}
+.legend .k.w-system{background:var(--tint2)}
+
+/* ---- callout --------------------------------------------------------------- */
+.callout{margin:36px 0 0;max-width:78ch}
+.callout .in{padding:24px 26px;border-left:2px solid var(--brand)}
+.callout h3{margin:0 0 9px;font-size:15px;font-weight:600;color:var(--ink);letter-spacing:-.01em}
+.callout p{margin:0;font-size:15px;line-height:1.58}
+
+pre{font-family:var(--mono);font-size:12.5px;line-height:1.7;overflow-x:auto;margin:0}
+.treewrap{margin:32px 0 0}
+.treewrap .in{background:#0c0e13;border-color:#1c2029}
+.tree{color:#dbe3ee;padding:24px}
+
+/* ---- the walkthrough ------------------------------------------------------
+   This is where the page stops describing and starts showing. Every pane is
+   built from a file in sample-runs/, and each one names the file it read. */
+.runs{margin:32px 0 0}
+.tabsrow{margin:0 0 20px}
+.tabs{display:flex;gap:5px;flex-wrap:wrap;padding:5px}
+.tabs button{font:inherit;font-size:13.5px;font-weight:500;padding:9px 16px;
+  border-radius:100px;border:1px solid transparent;background:transparent;color:var(--muted);
+  cursor:pointer;text-align:left;
+  transition:background-color .35s var(--ease),color .35s var(--ease),transform .35s var(--ease)}
+.tabs button:hover{color:var(--ink);background:var(--tint)}
+.tabs button[aria-selected=true]{background:var(--ink);color:#fff;border-color:var(--ink)}
+.tabs button:active{transform:scale(.97)}
+.panel[hidden]{display:none}
+.panel-lead{margin:0 0 20px;font-size:15.5px;color:var(--muted);max-width:66ch}
+
+.player .in{background:var(--surface)}
+.pbar{display:flex;align-items:center;gap:12px;padding:12px 14px;border-bottom:1px solid var(--hair2);
+  background:var(--tint);flex-wrap:wrap}
+.pbtn{font:inherit;font-size:13.5px;font-weight:600;color:#fff;background:var(--ink);
+  border:0;border-radius:100px;padding:8px 8px 8px 18px;cursor:pointer;
+  display:inline-flex;align-items:center;gap:11px;
+  transition:transform .35s var(--ease),opacity .35s var(--ease)}
+.pbtn .gl{width:26px;height:26px;border-radius:100px;background:rgba(255,255,255,.16);
+  display:grid;place-items:center;font-size:11px;line-height:1;
+  transition:transform .35s var(--ease),background-color .35s var(--ease)}
+.pbtn:hover .gl{background:rgba(255,255,255,.26);transform:scale(1.08)}
+.pbtn:active{transform:scale(.97)}
+.pcount{font-family:var(--mono);font-size:12px;color:var(--muted);letter-spacing:.02em}
+.psrc{margin-left:auto;font-family:var(--mono);font-size:11px;color:var(--faint);
+  white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.pbody{display:grid;grid-template-columns:250px 1fr;align-items:stretch}
+.prail{list-style:none;margin:0;padding:10px;border-right:1px solid var(--hair2);
+  background:#fcfcfd;display:flex;flex-direction:column;gap:2px}
+.prail button{font:inherit;width:100%;text-align:left;background:transparent;border:0;
+  cursor:pointer;padding:10px 12px;border-radius:11px;display:grid;
+  grid-template-columns:18px 1fr;gap:10px;align-items:start;color:var(--muted);
+  position:relative;transition:background-color .35s var(--ease),color .35s var(--ease)}
+.prail button:hover{background:var(--tint2);color:var(--ink)}
+.prail .sn{font-family:var(--mono);font-size:10.5px;padding-top:2px;color:var(--faint)}
+.prail .st{font-size:13.5px;line-height:1.35;letter-spacing:-.008em}
+.prail li.on button{background:var(--surface);color:var(--ink);font-weight:600;
+  box-shadow:var(--shadow-sm)}
+.prail li.on .sn{color:var(--brand-ink)}
+.prail li.done button{color:var(--body)}
+.prail .fill{grid-column:1/-1;height:2px;border-radius:2px;background:var(--brand);
+  transform:scaleX(0);transform-origin:left;margin-top:8px;display:none}
+.prail li.on .fill{display:block}
+
+.stage{padding:22px 24px 26px;min-width:0}
+.spane{min-width:0}
+.spane h5{margin:0 0 4px;font-size:17px;font-weight:600;color:var(--ink);letter-spacing:-.016em}
+.from{margin:0 0 18px;font-family:var(--mono);font-size:11px;color:var(--faint)}
+.from b{color:var(--brand-ink);font-weight:500}
+.snote{margin:0 0 16px;font-size:14.5px;line-height:1.55;color:var(--body);max-width:62ch}
+
+/* Player mode is switched on by script. Without it every pane renders stacked,
+   which is also exactly what a reduced-motion reader gets. */
+.player.on .spane{display:none}
+.player.on .spane.cur{display:block;animation:panein .5s var(--ease) both}
+@keyframes panein{from{opacity:0;transform:translate3d(0,12px,0)}to{opacity:1;transform:none}}
+.player.on .prail li.on .fill{animation:fill var(--dur,3200ms) linear forwards}
+.player.on.paused .prail li.on .fill{animation-play-state:paused}
+@keyframes fill{from{transform:scaleX(0)}to{transform:scaleX(1)}}
+.player:not(.on) .spane+.spane{margin-top:30px;padding-top:26px;border-top:1px solid var(--hair2)}
+.player:not(.on) .prail .fill{display:none}
+.player:not(.on) .pbar .pbtn,.player:not(.on) .pcount{display:none}
+
+.brief{background:var(--tint);border:1px solid var(--hair2);border-radius:12px;padding:16px 17px;
+  white-space:pre-wrap;word-break:break-word;max-height:250px;overflow-y:auto;
+  color:var(--body);font-size:12.5px}
+.kv{margin:0;display:grid;grid-template-columns:auto 1fr;gap:7px 16px;font-size:13.5px}
+.kv dt{color:var(--faint);font-family:var(--mono);font-size:11px;padding-top:3px;white-space:nowrap}
+.kv dd{margin:0;color:var(--body);min-width:0;overflow-wrap:anywhere}
+.qs{margin:18px 0 0;padding-left:19px;font-size:14px}
+.qs li{margin-bottom:8px;line-height:1.5}
+.tags{margin:0;padding:0;list-style:none;display:flex;flex-wrap:wrap;gap:7px}
+.tags li{font-size:12.5px;padding:5px 11px;border-radius:8px;cursor:help;border:1px solid transparent}
+.sev-block{background:var(--stop-bg);color:var(--stop);border-color:var(--stop-line)}
+.sev-escalate{background:var(--warn-bg);color:var(--warn);border-color:var(--warn-line)}
+.sev-warn{background:var(--tint2);color:var(--body);border-color:var(--hair)}
+.gate{display:inline-flex;align-items:center;gap:8px;font-size:13.5px;font-weight:600;
+  padding:7px 15px;border-radius:100px;margin:0 0 16px;border:1px solid transparent}
+.gate::before{content:"";width:7px;height:7px;border-radius:100px;background:currentColor}
+.g-ok{background:var(--ok-bg);color:var(--ok);border-color:var(--ok-line)}
+.g-stop{background:var(--stop-bg);color:var(--stop);border-color:var(--stop-line)}
+.g-review{background:var(--warn-bg);color:var(--warn);border-color:var(--warn-line)}
+.verdict{font-size:14.5px;margin:0;line-height:1.55}
+.verdict.ok{color:var(--ok)}
+.verdict.stop{color:var(--stop)}
+.score{font-family:var(--mono);font-size:12px;color:var(--muted);margin:0 0 14px}
+
+.prev{border:1px solid var(--hair);border-radius:13px;overflow:hidden;background:#fff;margin:20px 0 0}
+.prev-bar{font-size:10.5px;letter-spacing:.12em;text-transform:uppercase;color:var(--faint);
+  padding:10px 15px;border-bottom:1px solid var(--hair2);background:var(--tint)}
+.prev-scale{overflow:hidden;height:560px}
+.prev iframe{display:block;width:960px;height:560px;border:0;background:#fff;transform-origin:top left}
+
+/* ---- the walkthrough video -------------------------------------------------
+   Local file, no player library and no third-party embed, so the page keeps its
+   promise of rendering with the wifi off once it is cached. preload="none" is
+   deliberate: the MP4 is several megabytes and most readers scroll past it, so
+   nothing is fetched until someone presses play on the poster. */
+.vid{display:block;width:100%;height:auto;background:#0a0a0f;border-radius:var(--r-in)}
+/* The player fills its tray exactly, and .pane>.in clips at its own rounded
+   edge, so the global focus ring (2px brand, offset 3px) is drawn entirely
+   outside the clip and a keyboard user tabbing to the player sees nothing.
+   Same ring, same colour, same width, turned inward so it lands on the video
+   itself. The dark plate behind it gives the accent plenty of contrast. */
+.vid:focus-visible{outline:2px solid var(--brand);outline-offset:-4px}
+.vidnote{margin:14px 0 0;font-size:13px;line-height:1.6;color:var(--muted);max-width:72ch}
+.vidnote a{color:var(--brand-ink)}
+
+/* The document used to close on a footer block whose own padding supplied the
+   space under the last card. That block is gone, so the final section is now
+   the end of the page and carries the closing room itself. A spacer element
+   would hold the same gap and mean nothing, which is the thing worth avoiding. */
+main>section:last-child{padding-bottom:clamp(104px,11vw,168px)}
+
+@media (max-width:1040px){
+  :root{--rail:0px}
+  .rail{position:sticky;top:0;width:auto;inset:auto;flex-direction:row;align-items:center;
+    gap:4px;padding:10px 0;overflow-x:auto;box-shadow:0 1px 0 rgba(255,255,255,.08)}
+  .rail .brand{padding:0 14px 0 16px;flex:none;border-right:1px solid #23232c;margin-right:6px}
+  .rail .brand span i{display:none}
+  .rail ol{display:flex;gap:2px;overflow:visible;padding:0 8px 0 0}
+  .rail ol a{padding:7px 12px;white-space:nowrap}
+  .rail ol a::before{display:none}
+  .rail .foot{display:none}
+  main{margin-left:0}
+  .pbody{grid-template-columns:1fr}
+  .prail{flex-direction:row;overflow-x:auto;border-right:0;border-bottom:1px solid var(--hair2);
+    padding:8px;gap:4px}
+  .prail li{flex:none}
+  .prail button{width:auto;grid-template-columns:auto auto;white-space:nowrap;padding:8px 12px}
+  .prail .fill{grid-column:1/-1}
+  .stage{padding:20px}
+  body{font-size:16px}
+}
+@media (max-width:560px){
+  .steps li{flex-wrap:wrap;padding:13px 16px}
+  .steps .who{margin-left:36px}
+  .kv{grid-template-columns:1fr;gap:2px 0}
+  .kv dd{margin-bottom:9px}
+  .psrc{display:none}
+}
+</style>
+</head>
+<body>
+<script>document.documentElement.className='js'</script>
+
+<nav class="rail" aria-label="Sections">
+  <div class="brand"><span class="mk" aria-hidden="true"><!--MARK--></span>
+    <span><b>Email production</b><i>proof of concept</i></span></div>
+  <ol><!--NAV--></ol>
+  <p class="foot">Built to be read alone</p>
+</nav>
+
+<main>
+<!--BODY-->
+</main>
+
+<script>
+(function () {
+  var reduce = window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+  /* The rendered emails are a fixed 960px layout, so they scale to whatever
+     column they land in. This has to re-run whenever a frame goes from hidden
+     to visible: a hidden element measures zero width, and a frame measured at
+     zero collapses to nothing. Both the run tabs and the step player hide
+     things, so both call it. */
+  function scale(root) {
+    var boxes = (root || document).querySelectorAll('.prev-scale');
+    [].forEach.call(boxes, function (box) {
+      var f = box.querySelector('iframe');
+      if (!f || !box.clientWidth) return;
+      var k = box.clientWidth / 960;
+      f.style.transform = 'scale(' + k + ')';
+      box.style.height = Math.round(560 * k) + 'px';
+    });
+  }
+
+  /* ---- one step player per run --------------------------------------------
+     Advancement rides on the progress bar's animationend rather than a timer,
+     so pausing the animation pauses the walkthrough for free and the bar can
+     never drift out of sync with the pane it belongs to. */
+  function player(el) {
+    var rail = [].slice.call(el.querySelectorAll('.prail li'));
+    var panes = [].slice.call(el.querySelectorAll('.spane'));
+    var btn = el.querySelector('.pbtn');
+    var lbl = btn.querySelector('.lb');
+    var gl = btn.querySelector('.gl');
+    var count = el.querySelector('.pcount');
+    var i = 0, playing = false, started = false;
+
+    function paint() {
+      rail.forEach(function (li, k) {
+        li.classList.toggle('on', k === i);
+        li.classList.toggle('done', k < i);
+        li.querySelector('button').setAttribute('aria-current', k === i ? 'step' : 'false');
+      });
+      panes.forEach(function (p, k) { p.classList.toggle('cur', k === i); });
+      count.textContent = (i + 1) + ' / ' + panes.length;
+      scale(panes[i]);
+      keepVisible();
+    }
+    // On a phone the step list is a horizontal strip, so the active step can
+    // sit off screen while the walkthrough plays. Nudge the strip itself
+    // rather than calling scrollIntoView, which would drag the whole page.
+    function keepVisible() {
+      var strip = el.querySelector('.prail');
+      if (strip.scrollWidth <= strip.clientWidth) return;
+      var b = rail[i], want = b.offsetLeft - 12;
+      if (want < strip.scrollLeft || b.offsetLeft + b.offsetWidth > strip.scrollLeft + strip.clientWidth) {
+        strip.scrollTo ? strip.scrollTo({ left: want, behavior: 'smooth' }) : strip.scrollLeft = want;
+      }
+    }
+    function arm() {
+      // Restart the bar animation from zero. Reading offsetWidth forces the
+      // reflow that makes the removed class actually take effect.
+      var fill = rail[i].querySelector('.fill');
+      fill.style.animation = 'none';
+      void fill.offsetWidth;
+      fill.style.animation = '';
+    }
+    function setBtn() {
+      var done = !playing && i === panes.length - 1;
+      lbl.textContent = done ? 'Replay' : playing ? 'Pause' : 'Play';
+      gl.textContent = done ? '↺' : playing ? '‖' : '▶';
+      btn.setAttribute('aria-label', lbl.textContent + ' the walkthrough');
+    }
+    function go(n, keepPlaying) {
+      i = n; paint();
+      if (playing || keepPlaying) arm();
+      setBtn();
+    }
+    function play() {
+      if (i === panes.length - 1 && !playing) i = 0;
+      playing = true; el.classList.remove('paused'); go(i, true);
+    }
+    function pause() { playing = false; el.classList.add('paused'); setBtn(); }
+
+    rail.forEach(function (li, k) {
+      li.querySelector('button').addEventListener('click', function () {
+        pause(); go(k);
+      });
+      li.querySelector('.fill').addEventListener('animationend', function () {
+        if (!playing) return;
+        if (i < panes.length - 1) go(i + 1);
+        else { playing = false; setBtn(); }
+      });
+    });
+    btn.addEventListener('click', function () { playing ? pause() : play(); });
+
+    el.classList.add('on');
+    paint(); setBtn();
+
+    return {
+      // Autostart once, when the player is actually on screen. A walkthrough
+      // that has already run to the end is left alone.
+      wake: function () { if (!started) { started = true; play(); } },
+      rest: function () { if (playing) pause(); },
+      refresh: function () { paint(); }
+    };
+  }
+
+  var players = {};
+  [].forEach.call(document.querySelectorAll('.player'), function (el) {
+    if (!reduce) { players[el.getAttribute('data-run')] = player(el); return; }
+    // Reduced motion gets every step laid out at once, so the step list stops
+    // being a transport and becomes an index. Wire it up as one rather than
+    // leaving a row of buttons that do nothing.
+    [].forEach.call(el.querySelectorAll('.prail button'), function (b) {
+      b.addEventListener('click', function () {
+        var pane = document.getElementById(b.getAttribute('aria-controls'));
+        if (pane) pane.scrollIntoView({ block: 'start' });
+      });
+    });
+  });
+
+  /* ---- run picker ---------------------------------------------------------- */
+  var wrap = document.getElementById('runs');
+  var current = null;
+  if (wrap) {
+    var tabs = [].slice.call(wrap.querySelectorAll('[role=tab]'));
+    function show(i) {
+      tabs.forEach(function (t, k) {
+        var on = k === i;
+        t.setAttribute('aria-selected', on ? 'true' : 'false');
+        t.tabIndex = on ? 0 : -1;
+        var panel = document.getElementById(t.getAttribute('aria-controls'));
+        panel.hidden = !on;
+        if (on) current = panel.getAttribute('data-run');
+      });
+      var p = players[current];
+      if (p) p.refresh();
+      scale(document.getElementById('runs'));
+    }
+    tabs.forEach(function (t, i) {
+      t.addEventListener('click', function () {
+        var was = players[current];
+        if (was) was.rest();
+        show(i);
+      });
+      t.addEventListener('keydown', function (ev) {
+        var d = ev.key === 'ArrowRight' ? 1 : ev.key === 'ArrowLeft' ? -1 : 0;
+        if (!d) return;
+        ev.preventDefault();
+        var n = (i + d + tabs.length) % tabs.length;
+        tabs[n].focus(); tabs[n].click();
+      });
+    });
+    show(0);
+    window.addEventListener('resize', function () { scale(); });
+  }
+
+  if (!('IntersectionObserver' in window)) return;
+
+  /* Autostart the visible walkthrough, and stop it once it scrolls away so a
+     reader does not come back to a run that finished without them. */
+  var runsec = document.getElementById('run');
+  if (runsec) {
+    new IntersectionObserver(function (es) {
+      es.forEach(function (en) {
+        var p = players[current];
+        if (!p) return;
+        if (en.isIntersecting) p.wake(); else p.rest();
+      });
+    }, { threshold: 0.25 }).observe(runsec);
+  }
+
+  /* Entry reveals. */
+  var rvo = new IntersectionObserver(function (es) {
+    es.forEach(function (en) {
+      if (!en.isIntersecting) return;
+      en.target.classList.add('in');
+      rvo.unobserve(en.target);
+    });
+  }, { threshold: 0, rootMargin: '0px 0px -8% 0px' });
+  [].forEach.call(document.querySelectorAll('.rv'), function (n) { rvo.observe(n); });
+
+  /* Rail highlight. threshold 0 with a negative rootMargin, not 0.5: several
+     sections are taller than the viewport, so a half-visible test never fires
+     for them and the rail would stick on whichever short section came last. */
+  var links = {};
+  [].forEach.call(document.querySelectorAll('.rail ol a'), function (a) {
+    links[a.getAttribute('href').slice(1)] = a;
+  });
+  var io = new IntersectionObserver(function (es) {
+    es.forEach(function (en) {
+      if (!en.isIntersecting) return;
+      for (var k in links) links[k].classList.remove('on');
+      var a = links[en.target.id];
+      if (a) a.classList.add('on');
+    });
+  }, { threshold: 0, rootMargin: '-10% 0px -80% 0px' });
+  [].forEach.call(document.querySelectorAll('main section'), function (s) { io.observe(s); });
+})();
+</script>
+</body>
+</html>

@@ -1,0 +1,5 @@
+{
+  "ticket_id": "t-lang-010",
+  "source": "request_form",
+  "raw": "type: nurture\ngoal: Ayudar a los líderes de diseño a implementar un sistema de diseño compartido\naudience: líderes de sistemas de diseño en equipos de producto medianos\noffer: un recorrido guiado por el espacio de trabajo de Northwind\ncta: Ver el recorrido\nlink: https://www.northwindstudio.example/walkthrough\ndeadline: 2026-09-16\ninclude: Northwind está diseñado para sistemas de diseño en toda la organización\navoid: hablar de precios"
+}

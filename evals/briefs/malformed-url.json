@@ -1,0 +1,5 @@
+{
+  "ticket_id": "t-url-011",
+  "source": "request_form",
+  "raw": "type: nurture\ngoal: Invite design leads to the Handoff webinar\naudience: design leads on Northwind team plans\noffer: a live Handoff walkthrough with the product team\ncta: Save your seat\nlink: www.northwindstudio.example/webinar\ndeadline: 2026-09-20"
+}

@@ -1,0 +1,10 @@
+{
+  "gate": "blocked",
+  "lint_status": "fail",
+  "reviewer": {
+    "score": 0.4,
+    "notes": "Flagged: CLAIM_NUMBER."
+  },
+  "human_decision": "pending",
+  "note": ""
+}

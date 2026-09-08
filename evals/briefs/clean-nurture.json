@@ -1,0 +1,5 @@
+{
+  "ticket_id": "t-clean-001",
+  "source": "request_form",
+  "raw": "type: nurture\ngoal: Help design leads roll out a shared design system\naudience: design system leads at mid-size product teams\noffer: a guided walkthrough of the Northwind design system workspace\ncta: See the walkthrough\nlink: https://www.northwindstudio.example/walkthrough\ndeadline: 2026-09-16\ninclude: Northwind is built for organization-wide design systems\navoid: pricing talk"
+}

@@ -1,0 +1,66 @@
+{
+  "_comment": "Element rectangles measured off the page at the moment each shot in shots/ was taken, in screenshot pixels (origin top-left, 1600x1000). Captured with getBoundingClientRect in the same browser pass as the screenshot, so a highlight box built from these is correct by construction rather than eyeballed. Re-measure whenever the shots are re-taken.",
+  "_viewport": { "width": 1600, "height": 1000, "dpr": 1 },
+
+  "01-tabs-clean": {
+    "tabstrip": { "x": 409, "y": 25, "w": 1020, "h": 68 },
+    "tab-clean": { "x": 422, "y": 38, "w": 177, "h": 42 },
+    "tab-messy": { "x": 604, "y": 38, "w": 191, "h": 42 },
+    "tab-hostile": { "x": 800, "y": 38, "w": 248, "h": 42 },
+    "tab-break": { "x": 1053, "y": 38, "w": 302, "h": 42 },
+    "brief": { "x": 692, "y": 362, "w": 704, "h": 225 }
+  },
+
+  "02-messy-request": {
+    "brief": { "x": 692, "y": 362, "w": 704, "h": 77 },
+    "pane": { "x": 692, "y": 256, "w": 704, "h": 182 },
+    "rail-2": { "x": 428, "y": 305, "w": 229, "h": 39 }
+  },
+
+  "03-messy-questions": {
+    "note": { "x": 692, "y": 323, "w": 566, "h": 22 },
+    "fields": { "x": 692, "y": 362, "w": 704, "h": 51 },
+    "questions": { "x": 692, "y": 468, "w": 704, "h": 166 },
+    "tab-clean": { "x": 422, "y": 38, "w": 177, "h": 42 }
+  },
+
+  "04-clean-draft": {
+    "fields": { "x": 692, "y": 19, "w": 704, "h": 137 },
+    "citation": { "x": 692, "y": 205, "w": 153, "h": 32 },
+    "preview": { "x": 692, "y": 258, "w": 704, "h": 450 }
+  },
+
+  "05-hostile-rules": {
+    "rules": { "x": 692, "y": 362, "w": 704, "h": 72 },
+    "note": { "x": 692, "y": 323, "w": 566, "h": 22 },
+    "tab-break": { "x": 1053, "y": 38, "w": 302, "h": 42 }
+  },
+
+  "06-break-request": {
+    "brief": { "x": 692, "y": 362, "w": 704, "h": 247 },
+    "injected-line": { "x": 710, "y": 570, "w": 354, "h": 21 },
+    "rail-3": { "x": 428, "y": 346, "w": 229, "h": 39 }
+  },
+
+  "10-break-draft": {
+    "number-in-copy": { "x": 729, "y": 506, "w": 52, "h": 13 },
+    "rule-card": { "x": 1168, "y": 404, "w": 209, "h": 61 },
+    "rail-4": { "x": 428, "y": 58, "w": 229, "h": 39 }
+  },
+
+  "07-break-rule": {
+    "rule-chip": { "x": 692, "y": 362, "w": 228, "h": 32 },
+    "note": { "x": 692, "y": 323, "w": 566, "h": 22 },
+    "rail-5": { "x": 428, "y": 428, "w": 229, "h": 39 }
+  },
+
+  "08-break-gate": {
+    "gate": { "x": 692, "y": 362, "w": 102, "h": 38 },
+    "score": { "x": 692, "y": 416, "w": 704, "h": 19 },
+    "rail-6": { "x": 428, "y": 469, "w": 229, "h": 39 }
+  },
+
+  "09-break-handoff": {
+    "verdict": { "x": 692, "y": 362, "w": 704, "h": 22 }
+  }
+}

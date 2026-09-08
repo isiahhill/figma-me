@@ -1,0 +1,46 @@
+{
+  "ticket_id": "t-clean-001",
+  "type": "nurture",
+  "subject": "Help design leads roll out a shared design system",
+  "preheader": "A guided walkthrough of the Northwind design system workspace.",
+  "from_name": "Northwind Studio",
+  "from_email": "hello@northwindstudio.example",
+  "blocks": [
+    {
+      "kind": "hero",
+      "text": "Help design leads roll out a shared design system",
+      "html": "<h1 style=\"font-size:24px;line-height:32px;margin:0;\">Help design leads roll out a shared design system</h1>"
+    },
+    {
+      "kind": "body",
+      "text": "{% if customer.first_name %}Hi {{ customer.first_name }},{% else %}Hi there,{% endif %} We put together a guided walkthrough of the Northwind design system workspace. Northwind is built for organization-wide design systems.",
+      "html": "<p style=\"font-size:15px;line-height:24px;\">{% if customer.first_name %}Hi {{ customer.first_name }},{% else %}Hi there,{% endif %} We put together a guided walkthrough of the Northwind design system workspace. Northwind is built for organization-wide design systems.</p>"
+    },
+    {
+      "kind": "cta",
+      "text": "See the walkthrough",
+      "html": "<a href=\"https://www.northwindstudio.example/walkthrough\" style=\"display:inline-block;background:#1F6FEB;color:#ffffff;padding:12px 20px;border-radius:6px;text-decoration:none;\">See the walkthrough</a>"
+    },
+    {
+      "kind": "footer",
+      "text": "Northwind Studio, 100 Harbor Way, Suite 400, Oakland, CA 94607 You are receiving this because you have a Northwind Studio account. Unsubscribe",
+      "html": "<!-- Locked footer chrome. Attached by application code (attachFooter), never\n     emitted by the model. Contains the unsubscribe link and postal address\n     that CAN_UNSUB / CAN_ADDRESS check for. -->\n<table role=\"presentation\" width=\"100%\" cellpadding=\"0\" cellspacing=\"0\" style=\"border-top:1px solid #e5e5e5;margin-top:32px;\">\n  <tr>\n    <td style=\"padding:24px 0;font-family:Helvetica,Arial,sans-serif;font-size:12px;line-height:18px;color:#6b7280;\">\n      Northwind Studio, 100 Harbor Way, Suite 400, Oakland, CA 94607<br>\n      You are receiving this because you have a Northwind Studio account.<br>\n      <a href=\"https://www.northwindstudio.example/unsubscribe\" style=\"color:#6b7280;text-decoration:underline;\">Unsubscribe</a>\n    </td>\n  </tr>\n</table>\n"
+    }
+  ],
+  "cta": {
+    "label": "See the walkthrough",
+    "href": "https://www.northwindstudio.example/walkthrough",
+    "role": "primary"
+  },
+  "needs_input": [],
+  "citations": [
+    {
+      "claim_id": "claim.design_systems",
+      "span": "Northwind is built for organization-wide design systems"
+    }
+  ],
+  "lint": {
+    "status": "pass",
+    "violations": []
+  }
+}

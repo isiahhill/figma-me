@@ -1,0 +1,18 @@
+{
+  "status": "fail",
+  "violations": [
+    {
+      "rule_id": "CTA_COUNT",
+      "severity": "block",
+      "policy_class": "synthetic_poc_policy",
+      "message": "expected exactly one cta block, found 0"
+    },
+    {
+      "rule_id": "CTA_DOMAIN",
+      "severity": "block",
+      "policy_class": "synthetic_poc_policy",
+      "message": "cta is not a valid URL: ",
+      "span": ""
+    }
+  ]
+}

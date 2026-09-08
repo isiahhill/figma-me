@@ -1,0 +1,28 @@
+# Dependencies and local state
+node_modules/
+.env
+.env.*
+
+# Run artifacts are generated output; the folder ships empty with a .gitkeep.
+artifacts/runs/*
+!artifacts/runs/.gitkeep
+reports/
+
+# Working notes, drafts and reference material stay on the machine they were
+# written on. tests/synthetic-inputs.test.ts fails if any of it is tracked.
+/local/
+
+# The same material, refused by NAME wherever it lands. The directory rule
+# above only protects files somebody remembered to put in the right folder,
+# and the one that gets dropped at the repo root during a late edit is exactly
+# the one nobody was thinking about. These patterns were here before a history
+# rewrite replaced them with the directory rule alone; they are back because
+# the narrowing was a loss, not a simplification.
+*ASSIGNMENT*
+*assignment*
+*take-home-brief*
+*TAKE-HOME*
+*take-home*
+CLAUDE-CODE-EMAIL-CORTEX-PROMPT*
+*transcript*
+*TRANSCRIPT*

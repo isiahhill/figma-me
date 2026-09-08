@@ -1,0 +1,28 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "email_ticket.v1",
+  "title": "EmailTicket",
+  "description": "Structured intake contract. The agent parses a raw brief into this shape; everything downstream trusts the ticket, never the raw brief. Anything the parser could not establish goes in needs_input rather than being invented.",
+  "type": "object",
+  "required": [
+    "ticket_id", "raw", "type", "goal", "audience", "offer",
+    "cta_label", "cta_href", "must_include", "must_avoid",
+    "deadline", "confidence", "needs_input"
+  ],
+  "additionalProperties": false,
+  "properties": {
+    "ticket_id": { "type": "string", "minLength": 1 },
+    "raw": { "type": "string" },
+    "type": { "enum": ["nurture", "launch"] },
+    "goal": { "type": "string" },
+    "audience": { "type": "string" },
+    "offer": { "type": "string" },
+    "cta_label": { "type": "string" },
+    "cta_href": { "type": "string" },
+    "must_include": { "type": "array", "items": { "type": "string" } },
+    "must_avoid": { "type": "array", "items": { "type": "string" } },
+    "deadline": { "type": "string", "description": "ISO date or empty string when unknown (unknown goes in needs_input)" },
+    "confidence": { "type": "number", "minimum": 0, "maximum": 1 },
+    "needs_input": { "type": "array", "items": { "type": "string" } }
+  }
+}

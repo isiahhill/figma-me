@@ -1,0 +1,362 @@
+{
+  "_comment": "Page copy, written for reading rather than for speaking over. Deck wording is telegraphic because someone talks across it; on a page that reads as shorthand and leaves a reader guessing. So this is its own source. Run data still comes from sample-runs/ and is never typed here.",
+  "title": "Email production, governed",
+  "tagline": "A messy request goes in. An on-brand draft comes out. A person still says yes before anything ships.",
+  "rule_names": {
+    "CLAIM_NUMBER": "A number with no approved source",
+    "CLAIM_BARE_NUMBER": "A number with no context",
+    "CLAIM_IMPLIED": "An implied claim",
+    "CTA_COUNT": "Wrong number of buttons",
+    "CTA_DOMAIN": "Button points somewhere unapproved",
+    "LINK_HTTPS": "Insecure link",
+    "FORBIDDEN_PHRASE": "Banned marketing phrase",
+    "NAMED_CUSTOMER": "Names a customer without permission",
+    "LEGAL_TERM": "Legally sensitive wording",
+    "CAN_UNSUB": "No unsubscribe link",
+    "CAN_ADDRESS": "No postal address",
+    "CAN_SENDER": "No sender identity",
+    "SUBJECT_LEN": "Subject line too long",
+    "OUTPUT_SCHEMA": "Output did not match the contract",
+    "HTML_SAFETY": "Unsafe HTML",
+    "LIQUID_UNRESOLVED": "Unfilled personalisation tag",
+    "NO_FABRICATED_FALLBACK": "Invented fallback text"
+  },
+  "gate_names": {
+    "ready_for_cio": "Ready to hand off",
+    "blocked": "Stopped",
+    "review": "Needs a human read"
+  },
+  "sections": [
+    {
+      "id": "recommendation",
+      "nav": "The recommendation",
+      "title": "Build email production first",
+      "lead": "Email production is the one I would build first. This page is the argument and the running proof.",
+      "body": [
+        "The email team gets 40 to 60 requests a month. Each takes about two hours to build and two weeks to reach the front of the queue. That gap is the opportunity.",
+        "What I built takes a request in whatever shape it arrives, asks for anything missing, writes a draft that cites its sources, checks it against brand rules in code, and hands the result to the email team. Nothing sends by itself.",
+        "Writing the email is the easy part. Any model does that. The work is everything around it, the part that decides whether a draft may exist."
+      ],
+      "stats": [
+        {
+          "value": "86",
+          "label": "tests passing"
+        },
+        {
+          "value": "12 of 12",
+          "label": "scenarios passing"
+        },
+        {
+          "value": "11",
+          "label": "steps in the pipeline"
+        },
+        {
+          "value": "4",
+          "label": "steps the model touches"
+        }
+      ],
+      "next": "Why this one and not the other three."
+    },
+    {
+      "id": "which",
+      "nav": "Why this one",
+      "title": "Four opportunities, scored against six things",
+      "lead": "I scored all four against six measures, weighted them, and did the arithmetic. Email came out ahead.",
+      "body": [
+        "These scores are my reading, not a measurement. Anyone can reweight the arithmetic."
+      ],
+      "table": {
+        "cols": [
+          "What I weighed",
+          "Weight",
+          "Email",
+          "Account pages",
+          "Localisation",
+          "Personas"
+        ],
+        "rows": [
+          [
+            "Hours given back",
+            "20%",
+            "5",
+            "3",
+            "4",
+            "2"
+          ],
+          [
+            "Revenue it drives",
+            "20%",
+            "4",
+            "5",
+            "4",
+            "2"
+          ],
+          [
+            "How often it runs",
+            "15%",
+            "5",
+            "3",
+            "2",
+            "3"
+          ],
+          [
+            "Can we actually build it",
+            "20%",
+            "4",
+            "3",
+            "2",
+            "3"
+          ],
+          [
+            "Is the data there",
+            "15%",
+            "4",
+            "3",
+            "3",
+            "2"
+          ],
+          [
+            "How many people it reaches",
+            "10%",
+            "4",
+            "2",
+            "5",
+            "3"
+          ],
+          [
+            "Weighted score",
+            "",
+            "4.35",
+            "3.30",
+            "3.25",
+            "2.45"
+          ]
+        ],
+        "emphasis": 2
+      },
+      "reasons": [
+        {
+          "h": "Email production",
+          "p": "The two-week wait is queue time, not work. It runs every week rather than in bursts, so there is a real baseline to measure against today."
+        },
+        {
+          "h": "Account-based pages",
+          "p": "The strongest revenue story, and the one I wanted to pick. But the lift figure comes from pilots of unstated size, and 25 accounts to 250 is future capacity, not savings today."
+        },
+        {
+          "h": "Localisation",
+          "p": "The widest reach, ten regions. Four asset types across all ten with cultural review is more than a first build should carry, and most of the cost is vendor invoices."
+        },
+        {
+          "h": "Persona content",
+          "p": "Real value, but the revenue effect is hard to isolate from everything else."
+        }
+      ],
+      "callout": {
+        "h": "The tradeoff, and what would change my mind",
+        "p": "Email trades the cleanest revenue story for the only one with a real baseline and daily use. Weight revenue higher and account pages go first, built on the same pieces."
+      },
+      "next": "What the current process costs."
+    },
+    {
+      "id": "today",
+      "nav": "What it costs today",
+      "title": "Two hours of work, two weeks of waiting",
+      "lead": "A request travels through six stages. One of them is the building.",
+      "chain": [
+        "A request arrives in Slack or by email",
+        "Back and forth to work out what was meant",
+        "Copy, design, and revisions",
+        "Two weeks in the queue",
+        "The email team builds it, about two hours",
+        "Final check, then send"
+      ],
+      "body": [
+        "That is 80 to 120 hours of building a month, before revisions.",
+        "The hours are not the interesting part. The queue caps how many campaigns and tests ship, so the experiments worth running never run."
+      ],
+      "callout": {
+        "h": "What I assumed, and why",
+        "p": "An email team of three to five people. About 50 requests a month. Brand guidelines that split into rules a computer can check and judgment that needs a person. That split is what lets the system stop safely. And stakeholders who preview by link and never learn a new tool."
+      },
+      "next": "What replaces it."
+    },
+    {
+      "id": "flow",
+      "nav": "How the work flows",
+      "title": "Eleven steps, and the model touches four",
+      "lead": "The model reads the request, writes the draft, rewrites what failed a check, and scores quality. Everything else is ordinary code.",
+      "steps": true,
+      "body": [
+        "Step nine is the one to look at. It decides whether a draft moves forward, and it calls no model. It is an if-statement reading a rules file.",
+        "Asking a model to check its own work gets you the same model twice. A convincing draft talks its way past a model reviewer. It cannot talk past an if-statement.",
+        "Step eight is the other half. The quality score can push a draft down to a human read. It can never push one up."
+      ],
+      "exits": [
+        {
+          "h": "It asks a question",
+          "p": "Something required is missing, or the system is not sure it understood. It comes back with specific questions instead of a guess."
+        },
+        {
+          "h": "It asks for a read",
+          "p": "Nothing hard broke, but a soft rule fired or the score was low. A person reads it before the requester does."
+        },
+        {
+          "h": "It stops",
+          "p": "A hard brand rule failed. Nothing the model produces overrides that, and no draft leaves."
+        }
+      ],
+      "plain": "You paste a request. The system asks only for what it needs, writes a draft that cites every fact, and waits for a person.",
+      "next": "What stops a bad email."
+    },
+    {
+      "id": "guards",
+      "nav": "What stops a bad email",
+      "title": "Three things hold this up",
+      "lead": "None of them rely on the model behaving well.",
+      "cards": [
+        {
+          "h": "The model writes into a form",
+          "p": "It fills named fields. Subject, preheader, body blocks, one button, and a list of sources. Output that does not fit the form is a failed run with no draft. Loose prose never becomes an email."
+        },
+        {
+          "h": "Brand rules live in code",
+          "p": "The rules sit in a file with severities, beside a table of approved claims. A number missing from the table becomes a question, never an invention."
+        },
+        {
+          "h": "The gate fails closed",
+          "p": "It stops on a hard rule, asks for a read on a soft one, and reaches ready only when everything passes. No state means sent."
+        }
+      ],
+      "body": [
+        "The model cannot make web requests. The handoff is a plain function limited to an approved list of create-only endpoints. Nothing here sends, schedules, or triggers.",
+        "Subject length, the one-button rule, the allowed link destinations, and the banned phrase list are this brand's own policy, and every violation says so. The unsubscribe link, postal address, and sender identity are structural."
+      ],
+      "next": "Watch it happen first."
+    },
+    {
+      "id": "video",
+      "nav": "Watch the walkthrough",
+      "title": "Two minutes of it running",
+      "lead": "The whole pipeline, start to finish, in the order the story goes.",
+      "video": {
+        "src": "media/walkthrough.mp4",
+        "poster": "media/walkthrough-poster.jpg"
+      },
+      "next": "Now take the controls yourself."
+    },
+    {
+      "id": "run",
+      "nav": "Watch it run",
+      "title": "Four requests, four outcomes",
+      "lead": "Pick a run and press play. Every panel is read out of the captured artifacts, and each step names the file it came from.",
+      "runs": true,
+      "next": "Everything you just saw is reusable."
+    },
+    {
+      "id": "reuse",
+      "nav": "Built to be reused",
+      "title": "One email type, but the shape a second one inherits",
+      "lead": "I did not build one email. I built the structure the next content type drops into.",
+      "tree": true,
+      "cards": [
+        {
+          "h": "Marketers own the words",
+          "p": "Brand voice, approved claims, and per-type settings are plain files a marketer can edit. Adding an approved claim is a sign-off, not an engineering ticket."
+        },
+        {
+          "h": "Changes are versioned",
+          "p": "Prompts and skills carry version numbers. Changed behaviour means a new version, a changelog note, and a passing test run."
+        },
+        {
+          "h": "Drift is visible",
+          "p": "Expected outputs live in the repository, so a behaviour change shows up as a readable diff."
+        }
+      ],
+      "body": [
+        "Five pieces carry over. The request structure, the approved claims, the rule checker, the test runner, and the locked footer. Account pages would be next."
+      ],
+      "next": "How we would know it worked."
+    },
+    {
+      "id": "measure",
+      "nav": "How we would know",
+      "title": "Write down what it costs now, before claiming anything",
+      "lead": "Projects like this overclaim here, so the baseline gets written down first.",
+      "table": {
+        "cols": [
+          "What we measure",
+          "What it means",
+          "How we would do it"
+        ],
+        "rows": [
+          [
+            "Where we start",
+            "40 to 60 requests a month at about two hours each. 960 to 1,440 hours a year before revisions",
+            "Written down before any saving is claimed. Queue time tracked separately from effort"
+          ],
+          [
+            "Hours given back",
+            "Build hours returned, minus review and exception handling. Between 320 and 1,070 hours a year",
+            "Reported as a range. The load-bearing assumption is how many requests the system can help with, and it stays labelled an assumption until real data lands"
+          ],
+          [
+            "Revenue it drives",
+            "Tests and sends that shipped, times what the existing programme converts at",
+            "A holdout group where the team allows one. Otherwise it is influenced revenue, not caused"
+          ],
+          [
+            "Workflows running",
+            "How many of these run in production without me. One to start",
+            "It counts only with a named owner and a run in the last 30 days"
+          ],
+          [
+            "Whether people use it",
+            "Weekly active requesters, how often people edit the draft, whether they come back",
+            "Events recorded at each stage of every run, grouped by who asked"
+          ]
+        ]
+      },
+      "next": "None of which matters if nobody uses it."
+    },
+    {
+      "id": "adoption",
+      "nav": "Getting people to use it",
+      "title": "Shipped is not the same as adopted",
+      "lead": "Four weeks, one email type, and criteria for stopping written down in advance.",
+      "chain": [
+        "Week one, two requesters and one reviewer, preview only",
+        "Week two, turn on draft creation",
+        "Week four, expand only if people edit less than 40% of drafts",
+        "Days 30, 60 and 90, look back against the baseline"
+      ],
+      "body": [
+        "Nobody learns a tool. A requester pastes what they want and gets a preview link. The email team never leaves the tool they already use.",
+        "It stops if people edit more than 60% of what comes out, or if any automatic send path appears.",
+        "Adopted means runs that finish without me in the conversation. Not logins, not runs started. Two of five requesters using it is the finding, and it leads the review."
+      ],
+      "next": "Last, what I left out."
+    },
+    {
+      "id": "scope",
+      "nav": "What I left out",
+      "title": "What I did not build, and what I would ask for",
+      "lead": "One slice that runs properly, rather than five that half-run.",
+      "cards": [
+        {
+          "h": "Left out on purpose",
+          "p": "A live connection to the sending tool, Slack intake, automatic revision loops, every other email type, localisation, account pages, and any send path."
+        },
+        {
+          "h": "What I am least sure about",
+          "p": "Which object in the sending tool the handoff should create. I held it as a setting, a one-line change either way. I have not confirmed where the team's sends live."
+        },
+        {
+          "h": "What I would ask for",
+          "p": "Four weeks on one email type, stopping criteria agreed first, and the test suite gating every write."
+        }
+      ],
+      "next": null
+    }
+  ]
+}

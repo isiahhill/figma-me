@@ -1,0 +1,10 @@
+{
+  "gate": "ready_for_cio",
+  "lint_status": "pass",
+  "reviewer": {
+    "score": 0.95,
+    "notes": "On-ticket, cited, and inside brand policy."
+  },
+  "human_decision": "pending",
+  "note": ""
+}

@@ -1,0 +1,4 @@
+# Build inputs, not part of the published page. The Worker serves this
+# whole directory, so anything left here is a live URL.
+page.json
+_template.html

@@ -1,0 +1,600 @@
+{
+  "title": "Email production walkthrough",
+  "accent": "#4d49fc",
+  "background": "#f4f4f7",
+  "scenes": [
+    {
+      "type": "title",
+      "durationInFrames": 110,
+      "eyebrow": "Email production, governed",
+      "headline": "A request goes in. A person still says yes.",
+      "supporting": "Four requests go in. One comes out ready to hand off. Three stop before that.",
+      "align": "left",
+      "background": "tint"
+    },
+    {
+      "type": "browser",
+      "durationInFrames": 260,
+      "url": "fme.isiah.codes/#run",
+      "image": {
+        "src": "walkthrough/shots/01-tabs-clean.png",
+        "width": 1600,
+        "height": 1000
+      },
+      "fit": "width",
+      "highlights": [
+        {
+          "x": 409,
+          "y": 25,
+          "width": 1020,
+          "height": 68,
+          "fromFrame": 30,
+          "durationInFrames": 130
+        }
+      ],
+      "overlays": [
+        {
+          "type": "caption",
+          "text": "4 runs, each a different kind of request.",
+          "fromFrame": 10,
+          "durationInFrames": 125
+        },
+        {
+          "type": "caption",
+          "text": "Start with the request that actually turns up in Slack.",
+          "fromFrame": 145,
+          "durationInFrames": 105
+        },
+        {
+          "type": "cursor",
+          "path": [
+            {
+              "x": 1500,
+              "y": 900,
+              "atFrame": 0
+            },
+            {
+              "x": 853,
+              "y": 196,
+              "atFrame": 165,
+              "click": true
+            }
+          ],
+          "hideAfterFrame": 250
+        }
+      ]
+    },
+    {
+      "type": "browser",
+      "durationInFrames": 280,
+      "url": "fme.isiah.codes/#run",
+      "image": {
+        "src": "walkthrough/shots/02-messy-request.png",
+        "width": 1600,
+        "height": 1000
+      },
+      "fit": "width",
+      "highlights": [
+        {
+          "x": 684,
+          "y": 354,
+          "width": 720,
+          "height": 93,
+          "fromFrame": 40,
+          "durationInFrames": 195
+        }
+      ],
+      "overlays": [
+        {
+          "type": "caption",
+          "text": "One line. No goal, no link, no date.",
+          "fromFrame": 10,
+          "durationInFrames": 130
+        },
+        {
+          "type": "caption",
+          "text": "It also leans on a number nobody approved.",
+          "fromFrame": 145,
+          "durationInFrames": 120
+        },
+        {
+          "type": "cursor",
+          "path": [
+            {
+              "x": 1500,
+              "y": 900,
+              "atFrame": 0
+            },
+            {
+              "x": 686,
+              "y": 478,
+              "atFrame": 205,
+              "click": true
+            }
+          ],
+          "hideAfterFrame": 272
+        }
+      ]
+    },
+    {
+      "type": "browser",
+      "durationInFrames": 340,
+      "url": "fme.isiah.codes/#run",
+      "image": {
+        "src": "walkthrough/shots/03-messy-questions.png",
+        "width": 1600,
+        "height": 1000
+      },
+      "fit": "width",
+      "highlights": [
+        {
+          "x": 684,
+          "y": 315,
+          "width": 582,
+          "height": 38,
+          "fromFrame": 20,
+          "durationInFrames": 85
+        },
+        {
+          "x": 684,
+          "y": 460,
+          "width": 720,
+          "height": 182,
+          "fromFrame": 115,
+          "durationInFrames": 215
+        }
+      ],
+      "overlays": [
+        {
+          "type": "caption",
+          "text": "It did not guess. It read this at confidence 0.2 and asked.",
+          "fromFrame": 10,
+          "durationInFrames": 100
+        },
+        {
+          "type": "caption",
+          "text": "6 questions, each naming the field it needs.",
+          "fromFrame": 115,
+          "durationInFrames": 115
+        },
+        {
+          "type": "caption",
+          "text": "The unapproved number is quarantined, not written into copy.",
+          "fromFrame": 235,
+          "durationInFrames": 100
+        },
+        {
+          "type": "cursor",
+          "path": [
+            {
+              "x": 1500,
+              "y": 900,
+              "atFrame": 0
+            },
+            {
+              "x": 652,
+              "y": 196,
+              "atFrame": 285,
+              "click": true
+            }
+          ],
+          "hideAfterFrame": 332
+        }
+      ]
+    },
+    {
+      "type": "browser",
+      "durationInFrames": 370,
+      "url": "fme.isiah.codes/#run",
+      "image": {
+        "src": "walkthrough/shots/04-clean-draft.png",
+        "width": 1600,
+        "height": 1000
+      },
+      "fit": "width",
+      "highlights": [
+        {
+          "x": 684,
+          "y": 11,
+          "width": 720,
+          "height": 153,
+          "fromFrame": 20,
+          "durationInFrames": 105
+        },
+        {
+          "x": 684,
+          "y": 197,
+          "width": 169,
+          "height": 48,
+          "fromFrame": 135,
+          "durationInFrames": 105
+        },
+        {
+          "x": 684,
+          "y": 250,
+          "width": 720,
+          "height": 466,
+          "fromFrame": 255,
+          "durationInFrames": 105
+        }
+      ],
+      "overlays": [
+        {
+          "type": "caption",
+          "text": "Now the well-formed request, at the step that writes the draft.",
+          "fromFrame": 10,
+          "durationInFrames": 120
+        },
+        {
+          "type": "caption",
+          "text": "4 blocks, and its 1 factual claim points at an approved source.",
+          "fromFrame": 135,
+          "durationInFrames": 105
+        },
+        {
+          "type": "caption",
+          "text": "Here is the rendered email, button and footer and all.",
+          "fromFrame": 250,
+          "durationInFrames": 100
+        }
+      ]
+    },
+    {
+      "type": "browser",
+      "durationInFrames": 330,
+      "url": "fme.isiah.codes/#run",
+      "image": {
+        "src": "walkthrough/shots/05-hostile-rules.png",
+        "width": 1600,
+        "height": 1000
+      },
+      "fit": "width",
+      "highlights": [
+        {
+          "x": 684,
+          "y": 354,
+          "width": 720,
+          "height": 88,
+          "fromFrame": 55,
+          "durationInFrames": 235
+        }
+      ],
+      "overlays": [
+        {
+          "type": "caption",
+          "text": "A request that breaks the rules. 4 of them fire.",
+          "fromFrame": 10,
+          "durationInFrames": 130
+        },
+        {
+          "type": "caption",
+          "text": "Insecure link. Button points somewhere unapproved.",
+          "fromFrame": 145,
+          "durationInFrames": 105
+        },
+        {
+          "type": "caption",
+          "text": "Banned marketing phrase. Names a customer without permission.",
+          "fromFrame": 255,
+          "durationInFrames": 68
+        },
+        {
+          "type": "cursor",
+          "path": [
+            {
+              "x": 1500,
+              "y": 900,
+              "atFrame": 0
+            },
+            {
+              "x": 1389,
+              "y": 196,
+              "atFrame": 285,
+              "click": true
+            }
+          ],
+          "hideAfterFrame": 322
+        }
+      ]
+    },
+    {
+      "type": "title",
+      "durationInFrames": 95,
+      "eyebrow": "The one that matters",
+      "headline": "A clean request, with an invented number in it",
+      "supporting": "Everything else about this request is correct. One line was slipped in.",
+      "align": "left",
+      "background": "white"
+    },
+    {
+      "type": "browser",
+      "durationInFrames": 320,
+      "url": "fme.isiah.codes/#run",
+      "image": {
+        "src": "walkthrough/shots/06-break-request.png",
+        "width": 1600,
+        "height": 1000
+      },
+      "fit": "width",
+      "highlights": [
+        {
+          "x": 704,
+          "y": 564,
+          "width": 366,
+          "height": 33,
+          "fromFrame": 55,
+          "durationInFrames": 235
+        }
+      ],
+      "overlays": [
+        {
+          "type": "caption",
+          "text": "This request is well formed. Type, goal, audience, link, date.",
+          "fromFrame": 10,
+          "durationInFrames": 130
+        },
+        {
+          "type": "caption",
+          "text": "The last line reads \"teams see a 47 percent ROI in year one\".",
+          "fromFrame": 145,
+          "durationInFrames": 115
+        },
+        {
+          "type": "caption",
+          "text": "Nobody approved that number.",
+          "fromFrame": 265,
+          "durationInFrames": 48
+        },
+        {
+          "type": "cursor",
+          "path": [
+            {
+              "x": 1500,
+              "y": 900,
+              "atFrame": 0
+            },
+            {
+              "x": 686,
+              "y": 521,
+              "atFrame": 275,
+              "click": true
+            }
+          ],
+          "hideAfterFrame": 312
+        }
+      ]
+    },
+    {
+      "type": "browser",
+      "durationInFrames": 360,
+      "url": "fme.isiah.codes/#run",
+      "image": {
+        "src": "walkthrough/shots/10-break-draft.png",
+        "width": 1600,
+        "height": 1000
+      },
+      "fit": "width",
+      "highlights": [
+        {
+          "x": 723,
+          "y": 500,
+          "width": 64,
+          "height": 25,
+          "fromFrame": 45,
+          "durationInFrames": 150
+        },
+        {
+          "x": 1160,
+          "y": 396,
+          "width": 225,
+          "height": 77,
+          "fromFrame": 190,
+          "durationInFrames": 160
+        }
+      ],
+      "overlays": [
+        {
+          "type": "caption",
+          "text": "The model wrote the draft, invented number included.",
+          "fromFrame": 10,
+          "durationInFrames": 120
+        },
+        {
+          "type": "caption",
+          "text": "The checker marks it inside the rendered email.",
+          "fromFrame": 135,
+          "durationInFrames": 110
+        },
+        {
+          "type": "caption",
+          "text": "Numeric claim without an approved source. \"47 percent\".",
+          "fromFrame": 250,
+          "durationInFrames": 100
+        },
+        {
+          "type": "cursor",
+          "path": [
+            {
+              "x": 1500,
+              "y": 940,
+              "atFrame": 0
+            },
+            {
+              "x": 686,
+              "y": 215,
+              "atFrame": 290,
+              "click": true
+            }
+          ],
+          "hideAfterFrame": 352
+        }
+      ]
+    },
+    {
+      "type": "browser",
+      "durationInFrames": 320,
+      "url": "fme.isiah.codes/#run",
+      "image": {
+        "src": "walkthrough/shots/07-break-rule.png",
+        "width": 1600,
+        "height": 1000
+      },
+      "fit": "width",
+      "highlights": [
+        {
+          "x": 684,
+          "y": 354,
+          "width": 244,
+          "height": 48,
+          "fromFrame": 55,
+          "durationInFrames": 230
+        }
+      ],
+      "overlays": [
+        {
+          "type": "caption",
+          "text": "The rule pass says the same thing without the code.",
+          "fromFrame": 10,
+          "durationInFrames": 130
+        },
+        {
+          "type": "caption",
+          "text": "A number with no approved source. That is the only violation.",
+          "fromFrame": 145,
+          "durationInFrames": 115
+        },
+        {
+          "type": "caption",
+          "text": "Everything else about the request was fine.",
+          "fromFrame": 265,
+          "durationInFrames": 48
+        },
+        {
+          "type": "cursor",
+          "path": [
+            {
+              "x": 1500,
+              "y": 900,
+              "atFrame": 0
+            },
+            {
+              "x": 686,
+              "y": 608,
+              "atFrame": 275,
+              "click": true
+            }
+          ],
+          "hideAfterFrame": 312
+        }
+      ]
+    },
+    {
+      "type": "browser",
+      "durationInFrames": 300,
+      "url": "fme.isiah.codes/#run",
+      "image": {
+        "src": "walkthrough/shots/08-break-gate.png",
+        "width": 1600,
+        "height": 1000
+      },
+      "fit": "width",
+      "highlights": [
+        {
+          "x": 684,
+          "y": 354,
+          "width": 118,
+          "height": 54,
+          "fromFrame": 45,
+          "durationInFrames": 195
+        }
+      ],
+      "overlays": [
+        {
+          "type": "caption",
+          "text": "The gate reads the rule results and decides.",
+          "fromFrame": 10,
+          "durationInFrames": 120
+        },
+        {
+          "type": "caption",
+          "text": "Stopped. Reviewer score 0.4, flagged for the same rule.",
+          "fromFrame": 135,
+          "durationInFrames": 115
+        },
+        {
+          "type": "caption",
+          "text": "The gate calls no model, so a persuasive draft has nothing to persuade.",
+          "fromFrame": 255,
+          "durationInFrames": 43
+        },
+        {
+          "type": "cursor",
+          "path": [
+            {
+              "x": 1500,
+              "y": 900,
+              "atFrame": 0
+            },
+            {
+              "x": 686,
+              "y": 652,
+              "atFrame": 265,
+              "click": true
+            }
+          ],
+          "hideAfterFrame": 292
+        }
+      ]
+    },
+    {
+      "type": "browser",
+      "durationInFrames": 280,
+      "url": "fme.isiah.codes/#run",
+      "image": {
+        "src": "walkthrough/shots/09-break-handoff.png",
+        "width": 1600,
+        "height": 1000
+      },
+      "fit": "width",
+      "highlights": [
+        {
+          "x": 684,
+          "y": 354,
+          "width": 720,
+          "height": 38,
+          "fromFrame": 45,
+          "durationInFrames": 185
+        }
+      ],
+      "overlays": [
+        {
+          "type": "caption",
+          "text": "No payload file. No handoff event.",
+          "fromFrame": 10,
+          "durationInFrames": 115
+        },
+        {
+          "type": "caption",
+          "text": "Nothing left the system.",
+          "fromFrame": 130,
+          "durationInFrames": 90
+        },
+        {
+          "type": "caption",
+          "text": "A person has to clear the number before this goes anywhere.",
+          "fromFrame": 225,
+          "durationInFrames": 50
+        }
+      ]
+    },
+    {
+      "type": "title",
+      "durationInFrames": 165,
+      "eyebrow": "What it comes to",
+      "headline": "The model writes. Code decides.",
+      "supporting": "Every stop came from rules in code. Those rules run whatever the model produces.",
+      "align": "left",
+      "background": "tint"
+    }
+  ]
+}

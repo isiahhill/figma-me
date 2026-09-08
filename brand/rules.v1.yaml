@@ -1,0 +1,145 @@
+# Brand enforcement rules: the deterministic policy layer.
+#
+# Every rule carries a severity (block | escalate | warn) and a policy_class:
+#   structural:           invariants any production email must satisfy
+#   synthetic_poc_policy: thresholds invented for this POC so the pipeline has
+#                          teeth to demonstrate; NOT vendor policy or law.
+#                          (SUBJECT_LEN 8–78 is a synthetic bound, not CAN-SPAM.)
+#
+# The lint engine reads this file; changing a severity here changes gate
+# behavior without touching code. That is deliberate: marketers own the policy
+# file, engineers own the engine.
+#
+# Versioning: additive rules bump the minor here (rules.v1 -> rules.v1.1) and
+# get a "Rules" entry in prompts/CHANGELOG.md. The file NAME stays rules.v1
+# because retrieveContext.ts loads it by name and every doc cites it; a
+# rules.v2.yaml is for a breaking change (a rule removed or a severity
+# loosened), not for adding one.
+version: rules.v1.1
+rules:
+  - id: CAN_UNSUB
+    severity: block
+    policy_class: structural
+    description: Footer must contain the brand unsubscribe link.
+  - id: CAN_ADDRESS
+    severity: block
+    policy_class: structural
+    description: Footer must contain the brand postal address.
+  - id: CAN_SENDER
+    severity: block
+    policy_class: structural
+    description: From name/email must match brand/chrome/from.json exactly.
+  - id: LINK_HTTPS
+    severity: block
+    policy_class: structural
+    description: Every link in the email must be https.
+  - id: OUTPUT_SCHEMA
+    severity: block
+    policy_class: structural
+    description: Draft must validate against email_draft.v1.
+  - id: HTML_SAFETY
+    severity: block
+    policy_class: structural
+    description: >
+      Block html must be inert markup: no script elements, inline event
+      handlers, or executable URI schemes. The preview renders this html on
+      the reviewer's machine and the payload ships it verbatim.
+  - id: LIQUID_UNRESOLVED
+    severity: block
+    policy_class: structural
+    description: Only allowlisted Liquid tokens may appear; first_name must be if/else-wrapped.
+    params:
+      allowed_vars: ["customer.first_name", "customer.email", "customer.company"]
+  - id: NO_FABRICATED_FALLBACK
+    severity: block
+    policy_class: structural
+    description: Citations must reference real claim ids and spans that exist verbatim in the draft.
+  - id: SUBJECT_LEN
+    severity: warn
+    policy_class: synthetic_poc_policy
+    description: Subject length outside the synthetic 8-78 character window.
+    params: { min: 8, max: 78 }
+  - id: CTA_COUNT
+    severity: block
+    policy_class: synthetic_poc_policy
+    description: Exactly one primary CTA per email.
+  - id: CTA_DOMAIN
+    severity: block
+    policy_class: synthetic_poc_policy
+    description: >
+      Every link target in the email - not just the declared CTA - must sit
+      on an approved brand host, and the CTA block's anchor must match
+      cta.href exactly.
+    params:
+      allowed_hosts: ["www.northwindstudio.example", "help.northwindstudio.example"]
+  - id: FORBIDDEN_PHRASE
+    severity: block
+    policy_class: synthetic_poc_policy
+    description: Off-brand hype phrases are never allowed in copy.
+    params:
+      phrases:
+        - game-changing
+        - world-class
+        - synergy
+        - guaranteed results
+        - lowest price
+        - 10x overnight
+  - id: CLAIM_NUMBER
+    severity: block
+    policy_class: synthetic_poc_policy
+    description: >
+      Numeric performance/ROI claims (digits with %, percent, x, or currency)
+      are blocked. The approved claims library is deliberately number-free
+      (a guard test enforces that), so every such hit is uncited by
+      definition. The locked footer is excluded from this scan because its
+      address digits are chrome, not copy.
+  - id: CLAIM_BARE_NUMBER
+    severity: escalate
+    policy_class: synthetic_poc_policy
+    description: >
+      Any other digit-run in copy ("served 1,000 teams", "since 2018") reads
+      as a factual count but cites nothing, so it escalates to human review
+      rather than blocking - a reviewer may have the evidence, the model may
+      not assert numbers alone.
+  - id: CLAIM_IMPLIED
+    severity: escalate
+    policy_class: synthetic_poc_policy
+    description: >
+      Non-numeric quantitative implications ("cut your hours in half",
+      "double your output") escalate to human review rather than block:
+      a human may have evidence, the model may not assert it alone.
+    params:
+      patterns:
+        - "in half"
+        - "double your"
+        - "triple your"
+        - "times faster"
+        - "overnight results"
+  - id: NAMED_CUSTOMER
+    severity: block
+    policy_class: synthetic_poc_policy
+    description: Customer names may only appear if legal has cleared the reference (claims.v1 cleared_references).
+  - id: LEGAL_TERM
+    severity: escalate
+    policy_class: synthetic_poc_policy
+    description: >
+      Regulatory and legal-exposure vocabulary (compliance certifications,
+      indemnity, litigation, warranty) escalates to human review rather than
+      blocking: counsel may have signed off on exactly this wording, the
+      model may not assert it alone. The list is a synthetic POC stand-in for
+      whatever legal actually maintains; matching is whole-word on
+      normalized copy, same engine as FORBIDDEN_PHRASE. (Added in rules.v1.1.)
+    params:
+      terms:
+        - hipaa compliant
+        - gdpr compliant
+        - soc 2 certified
+        - fda approved
+        - indemnify
+        - indemnified
+        - indemnification
+        - lawsuit
+        - patent-pending
+        - legally binding
+        - warranty
+        - liability

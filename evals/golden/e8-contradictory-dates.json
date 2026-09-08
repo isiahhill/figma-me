@@ -1,0 +1,7 @@
+{
+  "gate": "review",
+  "deadline": "",
+  "needs_input": [
+    "conflicting deadlines in the brief (2026-09-16 vs 2026-09-23): ask the requester which one stands"
+  ]
+}

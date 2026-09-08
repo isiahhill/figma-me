@@ -1,0 +1,19 @@
+{
+  "ticket_id": "t-clean-001",
+  "raw": "type: nurture\ngoal: Help design leads roll out a shared design system\naudience: design system leads at mid-size product teams\noffer: a guided walkthrough of the Northwind design system workspace\ncta: See the walkthrough\nlink: https://www.northwindstudio.example/walkthrough\ndeadline: 2026-09-16\ninclude: Northwind is built for organization-wide design systems\navoid: pricing talk",
+  "type": "nurture",
+  "goal": "Help design leads roll out a shared design system",
+  "audience": "design system leads at mid-size product teams",
+  "offer": "a guided walkthrough of the Northwind design system workspace",
+  "cta_label": "See the walkthrough",
+  "cta_href": "https://www.northwindstudio.example/walkthrough",
+  "must_include": [
+    "Northwind is built for organization-wide design systems"
+  ],
+  "must_avoid": [
+    "pricing talk"
+  ],
+  "deadline": "2026-09-16",
+  "confidence": 0.9,
+  "needs_input": []
+}

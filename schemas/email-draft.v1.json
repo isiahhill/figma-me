@@ -1,0 +1,79 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "email_draft.v1",
+  "title": "EmailDraft",
+  "description": "The only shape the model is allowed to emit copy in. Every factual statement must cite a claim_id from claims.v1 or a ticket field; the footer block is attached by application code from brand/chrome/footer.html and is never model output.",
+  "type": "object",
+  "required": [
+    "ticket_id", "type", "subject", "preheader", "from_name", "from_email",
+    "blocks", "cta", "needs_input", "citations", "lint"
+  ],
+  "additionalProperties": false,
+  "properties": {
+    "ticket_id": { "type": "string", "minLength": 1 },
+    "type": { "enum": ["nurture", "launch"] },
+    "subject": { "type": "string" },
+    "preheader": { "type": "string" },
+    "from_name": { "type": "string" },
+    "from_email": { "type": "string" },
+    "blocks": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": ["kind", "text", "html"],
+        "additionalProperties": false,
+        "properties": {
+          "kind": { "enum": ["hero", "body", "proof", "cta", "footer"] },
+          "text": { "type": "string" },
+          "html": { "type": "string" }
+        }
+      }
+    },
+    "cta": {
+      "type": "object",
+      "required": ["label", "href", "role"],
+      "additionalProperties": false,
+      "properties": {
+        "label": { "type": "string" },
+        "href": { "type": "string" },
+        "role": { "enum": ["primary", "secondary"] }
+      }
+    },
+    "needs_input": { "type": "array", "items": { "type": "string" } },
+    "citations": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": ["claim_id", "span"],
+        "additionalProperties": false,
+        "properties": {
+          "claim_id": { "type": "string" },
+          "span": { "type": "string" }
+        }
+      }
+    },
+    "lint": {
+      "type": "object",
+      "required": ["status", "violations"],
+      "additionalProperties": false,
+      "properties": {
+        "status": { "enum": ["pass", "warn", "escalate", "fail"] },
+        "violations": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "required": ["rule_id", "severity", "policy_class", "message"],
+            "additionalProperties": false,
+            "properties": {
+              "rule_id": { "type": "string" },
+              "severity": { "enum": ["block", "escalate", "warn"] },
+              "policy_class": { "enum": ["structural", "synthetic_poc_policy"] },
+              "message": { "type": "string" },
+              "span": { "type": "string" }
+            }
+          }
+        }
+      }
+    }
+  }
+}

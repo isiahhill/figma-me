@@ -1,0 +1,7 @@
+{
+  "gate": "blocked",
+  "violations": [
+    "LEGAL_TERM:escalate",
+    "NAMED_CUSTOMER:block"
+  ]
+}

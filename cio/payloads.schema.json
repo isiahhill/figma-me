@@ -1,0 +1,46 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "cio_payload.v1",
+  "title": "CustomerIoCreatePayload",
+  "description": "Create-only handoff payload. Deliberately has no send/schedule/trigger surface: the schema itself cannot express a send. Tests assert those keys never appear anywhere in an emitted payload.",
+  "type": "object",
+  "required": ["pattern", "method", "sdk", "body"],
+  "additionalProperties": false,
+  "properties": {
+    "pattern": { "enum": ["design_studio", "newsletter"] },
+    "method": { "const": "POST" },
+    "sdk": { "enum": ["createDesignStudioEmail", "createNewsletter"] },
+    "body": {
+      "type": "object",
+      "required": ["name", "is_template", "content"],
+      "additionalProperties": false,
+      "properties": {
+        "name": { "type": "string", "minLength": 1 },
+        "is_template": { "const": false },
+        "content": {
+          "type": "object",
+          "required": ["subject", "preheader_text", "html", "text"],
+          "additionalProperties": false,
+          "properties": {
+            "subject": { "type": "string" },
+            "preheader_text": { "type": "string" },
+            "html": { "type": "string" },
+            "text": { "type": "string" }
+          }
+        },
+        "envelope": {
+          "type": "object",
+          "required": ["recipient"],
+          "additionalProperties": false,
+          "properties": {
+            "recipient": { "const": "{{customer.email}}" }
+          }
+        },
+        "recipients": {
+          "type": "null",
+          "description": "Newsletter pattern only. Always null from this pipeline: the agent has no audience-mutation permission, so a human attaches recipients in the Customer.io UI."
+        }
+      }
+    }
+  }
+}
